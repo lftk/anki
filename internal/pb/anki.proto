@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+option go_package = "github.com/lftk/anki/internal/pb";
+
+package pb;
+
+message StockNotetype {
+  enum OriginalStockKind {
+    ORIGINAL_STOCK_KIND_UNKNOWN = 0;
+    ORIGINAL_STOCK_KIND_BASIC = 1;
+    ORIGINAL_STOCK_KIND_BASIC_AND_REVERSED = 2;
+    ORIGINAL_STOCK_KIND_BASIC_OPTIONAL_REVERSED = 3;
+    ORIGINAL_STOCK_KIND_BASIC_TYPING = 4;
+    ORIGINAL_STOCK_KIND_CLOZE = 5;
+    ORIGINAL_STOCK_KIND_IMAGE_OCCLUSION = 6;
+  }
+}
+
+message NotetypeConfig {
+  enum Kind {
+    KIND_NORMAL = 0;
+    KIND_CLOZE = 1;
+  }
+  message CardRequirement {
+    enum Kind {
+      KIND_NONE = 0;
+      KIND_ANY = 1;
+      KIND_ALL = 2;
+    }
+    uint32 card_ord = 1;
+    Kind kind = 2;
+    repeated uint32 field_ords = 3;
+  }
+
+  Kind kind = 1;
+  uint32 sort_field_idx = 2;
+  string css = 3;
+  int64 target_deck_id_unused = 4;
+  string latex_pre = 5;
+  string latex_post = 6;
+  bool latex_svg = 7;
+  repeated CardRequirement reqs = 8;
+  StockNotetype.OriginalStockKind original_stock_kind = 9;
+  optional int64 original_id = 10;
+
+  bytes other = 255;
+}
+
+message FieldConfig {
+    bool sticky = 1;
+    bool rtl = 2;
+    string font_name = 3;
+    uint32 font_size = 4;
+    string description = 5;
+    bool plain_text = 6;
+    bool collapsed = 7;
+    bool exclude_from_search = 8;
+    optional int64 id = 9;
+    optional uint32 tag = 10;
+    bool prevent_deletion = 11;
+
+    bytes other = 255;
+}
+
+message TemplateConfig {
+    string q_format = 1;
+    string a_format = 2;
+    string q_format_browser = 3;
+    string a_format_browser = 4;
+    int64 target_deck_id = 5;
+    string browser_font_name = 6;
+    uint32 browser_font_size = 7;
+    optional int64 id = 8;
+
+    bytes other = 255;
+}
+
+message PackageMetadata {
+  enum Version {
+    VERSION_UNKNOWN = 0;
+    VERSION_LEGACY_1 = 1;
+    VERSION_LEGACY_2 = 2;
+    VERSION_LATEST = 3;
+  }
+
+  Version version = 1;
+}
+
+message MediaEntries {
+  message MediaEntry {
+    string name = 1;
+    uint32 size = 2;
+    bytes sha1 = 3;
+    optional uint32 legacy_zip_filename = 255;
+  }
+
+  repeated MediaEntry entries = 1;
+}
