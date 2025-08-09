@@ -40,7 +40,7 @@ func (c *Collection) GetCard(id int64) (*Card, error) {
 }
 
 func (c *Collection) AddCard(card *Card) error {
-	return withTransaction(c.db, func(tx *sql.Tx) error {
+	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		card.Modified = time.Now()
 		card.USN = -1
 
@@ -56,7 +56,7 @@ func (c *Collection) AddCard(card *Card) error {
 }
 
 func (c *Collection) UpdateCard(card *Card) error {
-	return withTransaction(c.db, func(tx *sql.Tx) error {
+	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		card.Modified = time.Now()
 		card.USN = -1
 

@@ -32,23 +32,15 @@ type Note struct {
 }
 
 func (c *Collection) GetNote(id int64) (*Note, error) {
-	row := c.db.QueryRow(`SELECT id, guid, mid, mod, usn, tags, flds, csum, flags, data FROM notes WHERE id = ?`, id)
-	note := &Note{}
-	var modMilli int64
-	var flds string
-	err := row.Scan(&note.ID, &note.GUID, &note.NotetypeID, &modMilli, &note.USN, &note.Tags, &flds, &note.Checksum, &note.Flags, &note.Data)
-	if err != nil {
-		return nil, err
-	}
-	note.Modified = time.UnixMilli(modMilli)
-	note.Fields = strings.Split(flds, fieldSeparator)
-	return note, nil
+	const query = `SELECT id, guid, mid, mod, usn, tags, flds, csum, flags, data FROM notes WHERE id = ?`
+
+	return sqlQuery(c.db, scanNote, query, id)
 }
 
 func (c *Collection) AddNote(note *Note) error {
 	notetype, err := c.GetNotetype(note.NotetypeID)
 	if err != nil {
-		return fmt.Errorf("failed to get notetype for note: %w", err)
+		return err
 	}
 	return c.addNote(note, notetype)
 }
@@ -56,7 +48,7 @@ func (c *Collection) AddNote(note *Note) error {
 func (c *Collection) UpdateNote(note *Note) error {
 	notetype, err := c.GetNotetype(note.NotetypeID)
 	if err != nil {
-		return fmt.Errorf("failed to get notetype for note: %w", err)
+		return err
 	}
 	return c.updateNote(note, notetype)
 }
@@ -66,34 +58,14 @@ func (c *Collection) DeleteNote(id int64) error {
 	return err
 }
 
-func (c *Collection) Notes() iter.Seq2[*Note, error] {
-	return func(yield func(*Note, error) bool) {
-		rows, err := c.db.Query(`SELECT id, guid, mid, mod, usn, tags, flds, csum, flags, data FROM notes`)
-		if err != nil {
-			yield(nil, err)
-			return
-		}
-		defer rows.Close()
+func (c *Collection) ListNotes() iter.Seq2[*Note, error] {
+	const query = `SELECT id, guid, mid, mod, usn, tags, flds, csum, flags, data FROM notes`
 
-		for rows.Next() {
-			note := &Note{}
-			var modMilli int64
-			var flds string
-			if err := rows.Scan(&note.ID, &note.GUID, &note.NotetypeID, &modMilli, &note.USN, &note.Tags, &flds, &note.Checksum, &note.Flags, &note.Data); err != nil {
-				yield(nil, err)
-				return
-			}
-			note.Modified = time.UnixMilli(modMilli)
-			note.Fields = strings.Split(flds, fieldSeparator)
-			if !yield(note, nil) {
-				return
-			}
-		}
-	}
+	return sqlSelectSeq(c.db, scanNote, query)
 }
 
 func (c *Collection) addNote(note *Note, notetype *Notetype) error {
-	return withTransaction(c.db, func(tx *sql.Tx) error {
+	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		if note.GUID == "" {
 			var err error
 			note.GUID, err = generateGUID()
@@ -124,7 +96,7 @@ func (c *Collection) addNote(note *Note, notetype *Notetype) error {
 }
 
 func (c *Collection) updateNote(note *Note, notetype *Notetype) error {
-	return withTransaction(c.db, func(tx *sql.Tx) error {
+	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		now := time.Now()
 		note.Modified = now
 		note.USN = -1
@@ -185,4 +157,32 @@ func stripHTML(s string) string {
 	result = htmlTagRegex.ReplaceAllString(result, "")
 
 	return result
+}
+
+func scanNote(_ sqlQueryer, row sqlRow) (*Note, error) {
+	var note Note
+	var mod int64
+	var flds string
+
+	dest := []any{
+		&note.ID,
+		&note.GUID,
+		&note.NotetypeID,
+		&mod,
+		&note.USN,
+		&note.Tags,
+		&flds,
+		&note.Checksum,
+		&note.Flags,
+		&note.Data,
+	}
+	err := row.Scan(dest...)
+	if err != nil {
+		return nil, err
+	}
+
+	note.Modified = time.UnixMilli(mod)
+	note.Fields = strings.Split(flds, fieldSeparator)
+
+	return &note, nil
 }

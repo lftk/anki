@@ -35,10 +35,52 @@ type Template struct {
 func (c *Collection) GetNotetype(id int64) (*Notetype, error) {
 	const query = `SELECT id, name, mtime_secs, usn, config FROM notetypes WHERE id = ?`
 
+	return sqlQuery(c.db, scanNotetype, query, id)
+}
+
+func listFields(q sqlQueryer, notetypeID int64) ([]*Field, error) {
+	const query = `SELECT ord, name, config FROM fields WHERE ntid = ? ORDER BY ord`
+
+	fn := func(_ sqlQueryer, row sqlRow) (*Field, error) {
+		var f Field
+		var config []byte
+		if err := row.Scan(&f.Ordinal, &f.Name, &config); err != nil {
+			return nil, err
+		}
+		f.Config = new(FieldConfig)
+		if err := proto.Unmarshal(config, f.Config); err != nil {
+			return nil, err
+		}
+		return &f, nil
+	}
+	return sqlSelect(q, fn, query, notetypeID)
+}
+
+func listTemplates(q sqlQueryer, notetypeID int64) ([]*Template, error) {
+	const query = `SELECT ord, name, mtime_secs, usn, config FROM templates WHERE ntid = ? ORDER BY ord`
+
+	fn := func(_ sqlQueryer, row sqlRow) (*Template, error) {
+		var t Template
+		var mod int64
+		var config []byte
+		if err := row.Scan(&t.Ordinal, &t.Name, &mod, &t.USN, &config); err != nil {
+			return nil, err
+		}
+		t.Modified = time.Unix(mod, 0)
+		t.Config = new(TemplateConfig)
+		if err := proto.Unmarshal(config, t.Config); err != nil {
+			return nil, err
+		}
+		return &t, nil
+	}
+	return sqlSelect(q, fn, query, notetypeID)
+}
+
+func scanNotetype(q sqlQueryer, row sqlRow) (*Notetype, error) {
 	var nt Notetype
 	var mod int64
 	var config []byte
-	err := c.db.QueryRow(query, id).Scan(&nt.ID, &nt.Name, &mod, &nt.USN, config)
+	err := row.Scan(&nt.ID, &nt.Name, &mod, &nt.USN, &config)
 	if err != nil {
 		return nil, err
 	}
@@ -49,13 +91,13 @@ func (c *Collection) GetNotetype(id int64) (*Notetype, error) {
 		return nil, err
 	}
 
-	fields, err := c.listFields(nt.ID)
+	fields, err := listFields(q, nt.ID)
 	if err != nil {
 		return nil, err
 	}
 	nt.Fields = fields
 
-	templates, err := c.listTemplates(nt.ID)
+	templates, err := listTemplates(q, nt.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +109,7 @@ func (c *Collection) GetNotetype(id int64) (*Notetype, error) {
 func (c *Collection) AddNotetype(notetype *Notetype) error {
 	const query = `INSERT INTO notetypes (id, name, mtime_secs, usn, config) VALUES (?, ?, ?, ?, ?)`
 
-	return withTransaction(c.db, func(tx *sql.Tx) error {
+	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		notetype.Modified = time.Now()
 		notetype.USN = -1
 
@@ -101,7 +143,7 @@ func (c *Collection) AddNotetype(notetype *Notetype) error {
 func (c *Collection) UpdateNotetype(notetype *Notetype) error {
 	const query = `UPDATE notetypes SET name = ?, mtime_secs = ?, usn = ?, config = ? WHERE id = ?`
 
-	return withTransaction(c.db, func(tx *sql.Tx) error {
+	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		notetype.Modified = time.Now()
 		notetype.USN = -1
 
@@ -142,7 +184,7 @@ func (c *Collection) UpdateNotetype(notetype *Notetype) error {
 }
 
 func (c *Collection) DeleteNotetype(id int64) error {
-	return withTransaction(c.db, func(tx *sql.Tx) error {
+	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		for _, query := range []string{
 			`DELETE FROM notetypes WHERE id = ?`,
 			`DELETE FROM fields WHERE ntid = ?`,
@@ -159,76 +201,7 @@ func (c *Collection) DeleteNotetype(id int64) error {
 func (c *Collection) ListNotetypes() iter.Seq2[*Notetype, error] {
 	const query = `SELECT id, name, mtime_secs, usn, config FROM notetypes`
 
-	return func(yield func(*Notetype, error) bool) {
-		rows, err := c.db.Query(query)
-		if err != nil {
-			yield(nil, err)
-			return
-		}
-		defer rows.Close()
-
-		for rows.Next() {
-			var nt Notetype
-			var mod int64
-			var config []byte
-			if err = rows.Scan(&nt.ID, &nt.Name, &mod, &nt.USN, &config); err != nil {
-				yield(nil, err)
-				return
-			}
-
-			nt.Modified = time.Unix(mod, 0)
-			nt.Config = new(NotetypeConfig)
-			if err = proto.Unmarshal(config, nt.Config); err != nil {
-				yield(nil, err)
-				return
-			}
-
-			fields, err := c.listFields(nt.ID)
-			if err != nil {
-				yield(nil, err)
-				return
-			}
-			nt.Fields = fields
-
-			templates, err := c.listTemplates(nt.ID)
-			if err != nil {
-				yield(nil, err)
-				return
-			}
-			nt.Templates = templates
-
-			if !yield(&nt, nil) {
-				return
-			}
-		}
-	}
-}
-
-func (c *Collection) listFields(notetypeID int64) ([]*Field, error) {
-	const query = `SELECT ord, name, config FROM fields WHERE ntid = ? ORDER BY ord`
-
-	rows, err := c.db.Query(query, notetypeID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var fields []*Field
-	for rows.Next() {
-		var f Field
-		var config []byte
-		if err = rows.Scan(&f.Ordinal, &f.Name, &config); err != nil {
-			return nil, err
-		}
-
-		f.Config = new(FieldConfig)
-		if err = proto.Unmarshal(config, f.Config); err != nil {
-			return nil, err
-		}
-
-		fields = append(fields, &f)
-	}
-	return fields, nil
+	return sqlSelectSeq(c.db, scanNotetype, query)
 }
 
 func (c *Collection) addField(tx *sql.Tx, notetypeID int64, field *Field) error {
@@ -241,35 +214,6 @@ func (c *Collection) addField(tx *sql.Tx, notetypeID int64, field *Field) error 
 
 	_, err = tx.Exec(query, notetypeID, field.Ordinal, field.Name, config)
 	return err
-}
-
-func (c *Collection) listTemplates(notetypeID int64) ([]*Template, error) {
-	const query = `SELECT ord, name, mtime_secs, usn, config FROM templates WHERE ntid = ? ORDER BY ord`
-
-	rows, err := c.db.Query(query, notetypeID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var templates []*Template
-	for rows.Next() {
-		var t Template
-		var mod int64
-		var config []byte
-		if err = rows.Scan(&t.Ordinal, &t.Name, &mod, &t.USN, &config); err != nil {
-			return nil, err
-		}
-
-		t.Modified = time.Unix(mod, 0)
-		t.Config = new(TemplateConfig)
-		if err = proto.Unmarshal(config, t.Config); err != nil {
-			return nil, err
-		}
-
-		templates = append(templates, &t)
-	}
-	return templates, nil
 }
 
 func (c *Collection) addTemplate(tx *sql.Tx, notetypeID int64, template *Template) error {

@@ -15,37 +15,23 @@ type Deck struct {
 }
 
 func (c *Collection) GetDeck(id int64) (*Deck, error) {
-	deck := &Deck{}
-	var modSecs int64
-	err := c.db.QueryRow("SELECT id, name, mtime_secs, usn, common, kind FROM decks WHERE id = ?", id).Scan(
-		&deck.ID, &deck.Name, &modSecs, &deck.USN, &deck.Common, &deck.Kind)
-	if err != nil {
-		return nil, err
-	}
-	deck.Modified = time.Unix(modSecs, 0)
-	return deck, err
+	const query = `SELECT id, name, mtime_secs, usn, common, kind FROM decks WHERE id = ?`
+
+	return sqlQuery(c.db, scanDeck, query, id)
 }
 
-func (c *Collection) Decks() iter.Seq2[*Deck, error] {
-	return func(yield func(*Deck, error) bool) {
-		rows, err := c.db.Query("SELECT id, name, mtime_secs, usn, common, kind FROM decks")
-		if err != nil {
-			yield(nil, err)
-			return
-		}
-		defer rows.Close()
+func (c *Collection) ListDecks() iter.Seq2[*Deck, error] {
+	const query = `SELECT id, name, mtime_secs, usn, common, kind FROM decks`
 
-		for rows.Next() {
-			deck := &Deck{}
-			var modSecs int64
-			if err := rows.Scan(&deck.ID, &deck.Name, &modSecs, &deck.USN, &deck.Common, &deck.Kind); err != nil {
-				yield(nil, err)
-				return
-			}
-			deck.Modified = time.Unix(modSecs, 0)
-			if !yield(deck, nil) {
-				return
-			}
-		}
+	return sqlSelectSeq(c.db, scanDeck, query)
+}
+
+func scanDeck(_ sqlQueryer, row sqlRow) (*Deck, error) {
+	var deck Deck
+	var mod int64
+	if err := row.Scan(&deck.ID, &deck.Name, &mod, &deck.USN, &deck.Common, &deck.Kind); err != nil {
+		return nil, err
 	}
+	deck.Modified = time.Unix(mod, 0)
+	return &deck, nil
 }
