@@ -28,15 +28,9 @@ type Card struct {
 }
 
 func (c *Collection) GetCard(id int64) (*Card, error) {
-	row := c.db.QueryRow(`SELECT id, nid, did, ord, mod, usn, type, queue, due, ivl, factor, reps, lapses, left, odue, odid, flags, data FROM cards WHERE id = ?`, id)
-	card := &Card{}
-	var modMilli int64
-	err := row.Scan(&card.ID, &card.NoteID, &card.DeckID, &card.Ordinal, &modMilli, &card.USN, &card.Type, &card.Queue, &card.Due, &card.Interval, &card.Factor, &card.Repetitions, &card.Lapses, &card.Left, &card.OriginalDue, &card.OriginalDeckID, &card.Flags, &card.Data)
-	if err != nil {
-		return nil, err
-	}
-	card.Modified = time.UnixMilli(modMilli)
-	return card, nil
+	const query = `SELECT id, nid, did, ord, mod, usn, type, queue, due, ivl, factor, reps, lapses, left, odue, odid, flags, data FROM cards WHERE id = ?`
+
+	return sqlGet(c.db, scanCard, query, id)
 }
 
 func (c *Collection) AddCard(card *Card) error {
@@ -72,25 +66,41 @@ func (c *Collection) DeleteCard(id int64) error {
 }
 
 func (c *Collection) ListCards() iter.Seq2[*Card, error] {
-	return func(yield func(*Card, error) bool) {
-		rows, err := c.db.Query(`SELECT id, nid, did, ord, mod, usn, type, queue, due, ivl, factor, reps, lapses, left, odue, odid, flags, data FROM cards`)
-		if err != nil {
-			yield(nil, err)
-			return
-		}
-		defer rows.Close()
+	const query = `SELECT id, nid, did, ord, mod, usn, type, queue, due, ivl, factor, reps, lapses, left, odue, odid, flags, data FROM cards`
 
-		for rows.Next() {
-			card := &Card{}
-			var modMilli int64
-			if err := rows.Scan(&card.ID, &card.NoteID, &card.DeckID, &card.Ordinal, &modMilli, &card.USN, &card.Type, &card.Queue, &card.Due, &card.Interval, &card.Factor, &card.Repetitions, &card.Lapses, &card.Left, &card.OriginalDue, &card.OriginalDeckID, &card.Flags, &card.Data); err != nil {
-				yield(nil, err)
-				return
-			}
-			card.Modified = time.UnixMilli(modMilli)
-			if !yield(card, nil) {
-				return
-			}
-		}
+	return sqlSelectSeq(c.db, scanCard, query)
+}
+
+func scanCard(_ sqlQueryer, row sqlRow) (*Card, error) {
+	var card Card
+	var mod int64
+
+	dest := []any{
+		&card.ID,
+		&card.NoteID,
+		&card.DeckID,
+		&card.Ordinal,
+		&mod,
+		&card.USN,
+		&card.Type,
+		&card.Queue,
+		&card.Due,
+		&card.Interval,
+		&card.Factor,
+		&card.Repetitions,
+		&card.Lapses,
+		&card.Left,
+		&card.OriginalDue,
+		&card.OriginalDeckID,
+		&card.Flags,
+		&card.Data,
 	}
+	err := row.Scan(dest...)
+	if err != nil {
+		return nil, err
+	}
+
+	card.Modified = time.UnixMilli(mod)
+
+	return &card, nil
 }

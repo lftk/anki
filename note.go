@@ -34,7 +34,7 @@ type Note struct {
 func (c *Collection) GetNote(id int64) (*Note, error) {
 	const query = `SELECT id, guid, mid, mod, usn, tags, flds, csum, flags, data FROM notes WHERE id = ?`
 
-	return sqlQuery(c.db, scanNote, query, id)
+	return sqlGet(c.db, scanNote, query, id)
 }
 
 func (c *Collection) AddNote(note *Note) error {

@@ -17,7 +17,7 @@ type Deck struct {
 func (c *Collection) GetDeck(id int64) (*Deck, error) {
 	const query = `SELECT id, name, mtime_secs, usn, common, kind FROM decks WHERE id = ?`
 
-	return sqlQuery(c.db, scanDeck, query, id)
+	return sqlGet(c.db, scanDeck, query, id)
 }
 
 func (c *Collection) ListDecks() iter.Seq2[*Deck, error] {

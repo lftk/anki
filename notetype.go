@@ -35,7 +35,7 @@ type Template struct {
 func (c *Collection) GetNotetype(id int64) (*Notetype, error) {
 	const query = `SELECT id, name, mtime_secs, usn, config FROM notetypes WHERE id = ?`
 
-	return sqlQuery(c.db, scanNotetype, query, id)
+	return sqlGet(c.db, scanNotetype, query, id)
 }
 
 func listFields(q sqlQueryer, notetypeID int64) ([]*Field, error) {

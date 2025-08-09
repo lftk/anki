@@ -38,7 +38,7 @@ type sqlRow interface {
 	Scan(dest ...any) error
 }
 
-func sqlQuery[T any](q sqlQueryer, fn func(sqlQueryer, sqlRow) (T, error), query string, args ...any) (T, error) {
+func sqlGet[T any](q sqlQueryer, fn func(sqlQueryer, sqlRow) (T, error), query string, args ...any) (T, error) {
 	return fn(q, q.QueryRow(query, args...))
 }
 
@@ -64,14 +64,14 @@ func sqlSelectSeq[T any](q sqlQueryer, fn func(sqlQueryer, sqlRow) (T, error), q
 		defer rows.Close()
 
 		for rows.Next() {
-			item, err := fn(q, rows)
+			val, err := fn(q, rows)
 			if err != nil {
 				var zero T
 				yield(zero, err)
 				return
 			}
 
-			if !yield(item, nil) {
+			if !yield(val, nil) {
 				return
 			}
 		}
