@@ -4,18 +4,16 @@ import (
 	"crypto/sha1"
 	"database/sql"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"iter"
 	"regexp"
 	"strings"
 	"time"
-)
 
-const fieldSeparator = "\x1f"
+	"github.com/google/uuid"
 
-var (
-	htmlTagRegex   = regexp.MustCompile(`<[^>]*>`)
-	mediaFileRegex = regexp.MustCompile(`(?i)<img[^>]+src=["']?([^"'>]+)["']?[^>]*>|\[sound:([^\]]+)\]|\[anki:sound:([^\]]+)\]`)
+	"github.com/lftk/anki/internal/pb"
 )
 
 type Note struct {
@@ -24,7 +22,7 @@ type Note struct {
 	NotetypeID int64
 	Modified   time.Time
 	USN        int64
-	Tags       string
+	Tags       []string
 	Fields     []string
 	Checksum   int64
 	Flags      int64
@@ -37,12 +35,12 @@ func (c *Collection) GetNote(id int64) (*Note, error) {
 	return sqlGet(c.db, scanNote, query, id)
 }
 
-func (c *Collection) AddNote(note *Note) error {
+func (c *Collection) AddNote(deckID int64, note *Note) error {
 	notetype, err := c.GetNotetype(note.NotetypeID)
 	if err != nil {
 		return err
 	}
-	return c.addNote(note, notetype)
+	return c.addNote(deckID, note, notetype)
 }
 
 func (c *Collection) UpdateNote(note *Note) error {
@@ -64,87 +62,172 @@ func (c *Collection) ListNotes() iter.Seq2[*Note, error] {
 	return sqlSelectSeq(c.db, scanNote, query)
 }
 
-func (c *Collection) addNote(note *Note, notetype *Notetype) error {
+func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error {
+	const query = `
+INSERT INTO
+  notes (
+    id,
+    guid,
+    mid,
+    mod,
+    usn,
+    tags,
+    flds,
+    sfld,
+    csum,
+    flags,
+    data
+  )
+VALUES
+  (
+    (
+      CASE
+        WHEN ?1 IN (
+          SELECT
+            id
+          FROM
+            notes
+        ) THEN (
+          SELECT
+            max(id) + 1
+          FROM
+            notes
+        )
+        ELSE ?1
+      END
+    ),
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?, -- 0
+    ?, -- ""
+  )
+`
+
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		if note.GUID == "" {
 			var err error
-			note.GUID, err = generateGUID()
+			note.GUID, err = randomGUID()
 			if err != nil {
-				return fmt.Errorf("failed to generate guid: %w", err)
+				return err
 			}
 		}
 		note.Modified = time.Now()
 		note.USN = -1
 
-		sortField, keyField, err := c.prepareNoteFields(note, notetype)
+		fld1, sfld, err := prepareNoteFields(note, notetype)
 		if err != nil {
 			return err
 		}
-		note.Checksum = calculateChecksum(keyField)
+		note.Checksum = fieldChecksum(fld1)
 
-		flds := strings.Join(note.Fields, fieldSeparator)
+		id := note.ID
+		if id == 0 {
+			id = time.Now().UnixMilli()
+		}
 
-		res, err := tx.Exec(`INSERT INTO notes (guid, mid, mod, usn, tags, flds, sfld, csum, flags, data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			note.GUID, note.NotetypeID, note.Modified.UnixMilli(), note.USN, note.Tags, flds, sortField, note.Checksum, note.Flags, note.Data)
+		args := []any{
+			id,
+			note.GUID,
+			note.NotetypeID,
+			note.Modified.UnixMilli(),
+			note.USN,
+			joinTags(note.Tags),
+			joinFields(note.Fields),
+			sfld,
+			note.Checksum,
+			note.Flags,
+			note.Data,
+		}
+		note.ID, err = sqlInsert(tx, query, args...)
 		if err != nil {
 			return err
 		}
 
-		note.ID, err = res.LastInsertId()
-		return err
+		cards, err := generateCards(deckID, note, notetype)
+		if err != nil {
+			return err
+		}
+
+		for _, card := range cards {
+			if err = c.AddCard(card); err != nil {
+				return err
+			}
+		}
+
+		return nil
 	})
 }
 
 func (c *Collection) updateNote(note *Note, notetype *Notetype) error {
+	const query = `UPDATE notes SET guid = ?, mid = ?, mod = ?, usn = ?, tags = ?, flds = ?, sfld = ?, csum = ?, flags = ?, data = ? WHERE id = ?`
+
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
-		now := time.Now()
-		note.Modified = now
+		note.Modified = time.Now()
 		note.USN = -1
 
-		sortField, keyField, err := c.prepareNoteFields(note, notetype)
+		fld1, sfld, err := prepareNoteFields(note, notetype)
 		if err != nil {
 			return err
 		}
-		note.Checksum = calculateChecksum(keyField)
+		note.Checksum = fieldChecksum(fld1)
 
-		flds := strings.Join(note.Fields, fieldSeparator)
-
-		_, err = tx.Exec(`UPDATE notes SET guid = ?, mid = ?, mod = ?, usn = ?, tags = ?, flds = ?, sfld = ?, csum = ?, flags = ?, data = ? WHERE id = ?`,
-			note.GUID, note.NotetypeID, note.Modified.UnixMilli(), note.USN, note.Tags, flds, sortField, note.Checksum, note.Flags, note.Data, note.ID)
+		args := []any{
+			note.GUID,
+			note.NotetypeID,
+			note.Modified.UnixMilli(),
+			note.USN,
+			joinTags(note.Tags),
+			joinFields(note.Fields),
+			sfld,
+			note.Checksum,
+			note.Flags,
+			note.Data,
+			note.ID,
+		}
+		_, err = tx.Exec(query, args...)
 		return err
 	})
 }
 
-func (c *Collection) prepareNoteFields(note *Note, notetype *Notetype) (sortField string, keyField string, err error) {
+func prepareNoteFields(note *Note, notetype *Notetype) (fld1, sfld string, err error) {
 	if len(note.Fields) == 0 {
 		err = fmt.Errorf("cannot process note with no fields")
 		return
 	}
-
-	keyField = stripHTML(note.Fields[0])
-
+	fld1 = stripHTML(note.Fields[0])
 	sortIndex := notetype.Config.GetSortFieldIdx()
 	if sortIndex == 0 {
-		sortField = keyField
+		sfld = fld1
 	} else {
 		if int(sortIndex) >= len(note.Fields) {
 			err = fmt.Errorf("sort_field_idx %d is out of bounds for note with %d fields", sortIndex, len(note.Fields))
 			return
 		}
-		sortField = stripHTML(note.Fields[sortIndex])
+		sfld = stripHTML(note.Fields[sortIndex])
 	}
 	return
 }
 
-func calculateChecksum(keyField string) int64 {
-	hasher := sha1.New()
-	hasher.Write([]byte(keyField))
-	hashBytes := hasher.Sum(nil)
-	return int64(int32(binary.BigEndian.Uint32(hashBytes[:4])))
+func fieldChecksum(field string) int64 {
+	h := sha1.New()
+	h.Write([]byte(field))
+	sum := h.Sum(nil)
+	return int64(int32(binary.BigEndian.Uint32(sum[:4])))
 }
 
+var (
+	htmlTagRegex   = regexp.MustCompile(`<[^>]*>`)
+	mediaFileRegex = regexp.MustCompile(`(?i)<img[^>]+src=["']?([^"'>]+)["']?[^>]*>|\[sound:([^\]]+)\]|\[anki:sound:([^\]]+)\]`)
+)
+
 func stripHTML(s string) string {
-	result := mediaFileRegex.ReplaceAllStringFunc(s, func(match string) string {
+	repl := func(match string) string {
 		submatches := mediaFileRegex.FindStringSubmatch(match)
 		for i := 1; i < len(submatches); i++ {
 			if submatches[i] != "" {
@@ -152,17 +235,15 @@ func stripHTML(s string) string {
 			}
 		}
 		return ""
-	})
-
-	result = htmlTagRegex.ReplaceAllString(result, "")
-
-	return result
+	}
+	return htmlTagRegex.ReplaceAllString(mediaFileRegex.ReplaceAllStringFunc(s, repl), "")
 }
 
 func scanNote(_ sqlQueryer, row sqlRow) (*Note, error) {
 	var note Note
 	var mod int64
-	var flds string
+	var tags string
+	var fields string
 
 	dest := []any{
 		&note.ID,
@@ -170,8 +251,8 @@ func scanNote(_ sqlQueryer, row sqlRow) (*Note, error) {
 		&note.NotetypeID,
 		&mod,
 		&note.USN,
-		&note.Tags,
-		&flds,
+		&tags,
+		&fields,
 		&note.Checksum,
 		&note.Flags,
 		&note.Data,
@@ -182,7 +263,57 @@ func scanNote(_ sqlQueryer, row sqlRow) (*Note, error) {
 	}
 
 	note.Modified = time.UnixMilli(mod)
-	note.Fields = strings.Split(flds, fieldSeparator)
+	note.Tags = splitTags(tags)
+	note.Fields = splitFields(fields)
 
 	return &note, nil
+}
+
+func randomGUID() (string, error) {
+	u, err := uuid.NewRandom()
+	if err != nil {
+		return "", err
+	}
+	return u.String(), nil
+}
+
+func joinTags(tags []string) string {
+	if len(tags) == 0 {
+		return ""
+	}
+	return " " + strings.Join(tags, " ") + " "
+}
+
+func splitTags(tags string) []string {
+	// TODO: prefix and suffix spaces
+	return strings.FieldsFunc(tags, isTagSeparator)
+}
+
+func isTagSeparator(r rune) bool {
+	return r == ' ' || r == '\u3000'
+}
+
+const fieldSeparator = "\x1f"
+
+func joinFields(fields []string) string {
+	return strings.Join(fields, fieldSeparator)
+}
+
+func splitFields(fields string) []string {
+	return strings.Split(fields, fieldSeparator)
+}
+
+func generateCards(deckID int64, note *Note, notetype *Notetype) ([]*Card, error) {
+	switch notetype.Config.Kind {
+	case pb.NotetypeConfig_KIND_NORMAL:
+		for _, t := range notetype.Templates {
+			_ = t
+		}
+		// todo
+	case pb.NotetypeConfig_KIND_CLOZE:
+		// todo
+	default:
+		return nil, errors.New("unknown notetype kind")
+	}
+	return nil, nil
 }

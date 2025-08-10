@@ -3,8 +3,6 @@ package anki
 import (
 	"database/sql"
 	"iter"
-
-	"github.com/google/uuid"
 )
 
 func sqlTransact(db *sql.DB, fn func(tx *sql.Tx) error) error {
@@ -78,10 +76,14 @@ func sqlSelectSeq[T any](q sqlQueryer, fn func(sqlQueryer, sqlRow) (T, error), q
 	}
 }
 
-func generateGUID() (string, error) {
-	u, err := uuid.NewRandom()
+type sqlExecer interface {
+	Exec(query string, args ...any) (sql.Result, error)
+}
+
+func sqlInsert(e sqlExecer, query string, args ...any) (int64, error) {
+	r, err := e.Exec(query, args...)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	return u.String(), nil
+	return r.LastInsertId()
 }
