@@ -104,3 +104,9 @@ func scanCard(_ sqlQueryer, row sqlRow) (*Card, error) {
 
 	return &card, nil
 }
+
+func deleteCards(e sqlExecer, noteID int64) error {
+	const query = `DELETE FROM cards WHERE nid = ?`
+
+	return sqlExecute(e, query, noteID)
+}

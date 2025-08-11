@@ -87,3 +87,13 @@ func sqlInsert(e sqlExecer, query string, args ...any) (int64, error) {
 	}
 	return r.LastInsertId()
 }
+
+func sqlExecute(e sqlExecer, query string, args ...any) error {
+	_, err := e.Exec(query, args...)
+	return err
+}
+
+type sqlExt interface {
+	sqlQueryer
+	sqlExecer
+}

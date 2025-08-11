@@ -116,17 +116,13 @@ func (c *Collection) UpdateNotetype(notetype *Notetype) error {
 }
 
 func (c *Collection) DeleteNotetype(id int64) error {
+	const query = `DELETE FROM notetypes WHERE id = ?`
+
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
-		for _, query := range []string{
-			`DELETE FROM notetypes WHERE id = ?`,
-			`DELETE FROM fields WHERE ntid = ?`,
-			`DELETE FROM templates WHERE ntid = ?`,
-		} {
-			if _, err := tx.Exec(query, id); err != nil {
-				return err
-			}
+		if err := sqlExecute(tx, query, id); err != nil {
+			return err
 		}
-		return nil
+		return deleteNotes(tx, id)
 	})
 }
 

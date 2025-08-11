@@ -52,8 +52,40 @@ func (c *Collection) UpdateNote(note *Note) error {
 }
 
 func (c *Collection) DeleteNote(id int64) error {
-	_, err := c.db.Exec("DELETE FROM notes WHERE id = ?", id)
-	return err
+	return sqlTransact(c.db, func(tx *sql.Tx) error {
+		return deleteNote(tx, id)
+	})
+}
+
+func deleteNotes(e sqlExt, notetypeID int64) error {
+	const query = `SELECT id FROM notes WHERE mid = ?`
+
+	fn := func(_ sqlQueryer, row sqlRow) (int64, error) {
+		var id int64
+		if err := row.Scan(&id); err != nil {
+			return 0, err
+		}
+		return id, nil
+	}
+
+	for id, err := range sqlSelectSeq(e, fn, query, notetypeID) {
+		if err != nil {
+			return err
+		}
+		if err := deleteNote(e, id); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func deleteNote(e sqlExecer, noteID int64) error {
+	const query = `DELETE FROM notes WHERE id = ?`
+
+	if err := sqlExecute(e, query, noteID); err != nil {
+		return err
+	}
+	return deleteCards(e, noteID)
 }
 
 func (c *Collection) ListNotes() iter.Seq2[*Note, error] {
