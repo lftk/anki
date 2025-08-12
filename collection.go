@@ -120,7 +120,7 @@ func LoadDir(dir string) (*Collection, error) {
 }
 
 func loadDir(dir string, isTempDir bool) (*Collection, error) {
-	db, err := sql.Open("sqlite3", databasePath(dir)+"?_journal=WAL")
+	db, err := sqlite3Open(databasePath(dir) + "?_journal=WAL")
 	if err != nil {
 		return nil, err
 	}
