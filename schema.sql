@@ -97,6 +97,12 @@ CREATE TABLE config (
   mtime_secs integer NOT NULL,
   val blob NOT NULL
 ) without rowid;
+CREATE TABLE tags (
+  tag text NOT NULL PRIMARY KEY COLLATE unicase,
+  usn integer NOT NULL,
+  collapsed boolean NOT NULL,
+  config blob NULL
+) without rowid;
 -- syncing
 CREATE INDEX ix_notes_usn ON notes (usn);
 CREATE INDEX ix_cards_usn ON cards (usn);
