@@ -222,8 +222,7 @@ func (c *Collection) updateNote(note *Note, notetype *Notetype) error {
 			note.Data,
 			note.ID,
 		}
-		_, err = tx.Exec(query, args...)
-		return err
+		return sqlExecute(tx, query, args...)
 	})
 }
 

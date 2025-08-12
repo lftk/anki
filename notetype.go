@@ -50,8 +50,14 @@ func (c *Collection) AddNotetype(notetype *Notetype) error {
 			return err
 		}
 
-		_, err = tx.Exec(query, notetype.ID, notetype.Name, notetype.Modified.Unix(), notetype.USN, config)
-		if err != nil {
+		args := []any{
+			notetype.ID,
+			notetype.Name,
+			notetype.Modified.Unix(),
+			notetype.USN,
+			config,
+		}
+		if err = sqlExecute(tx, query, args...); err != nil {
 			return err
 		}
 
@@ -84,8 +90,14 @@ func (c *Collection) UpdateNotetype(notetype *Notetype) error {
 			return err
 		}
 
-		_, err = tx.Exec(query, notetype.Name, notetype.Modified.Unix(), notetype.USN, config, notetype.ID)
-		if err != nil {
+		args := []any{
+			notetype.Name,
+			notetype.Modified.Unix(),
+			notetype.USN,
+			config,
+			notetype.ID,
+		}
+		if err = sqlExecute(tx, query, args...); err != nil {
 			return err
 		}
 
@@ -93,7 +105,7 @@ func (c *Collection) UpdateNotetype(notetype *Notetype) error {
 			`DELETE FROM fields WHERE ntid = ?`,
 			`DELETE FROM templates WHERE ntid = ?`,
 		} {
-			if _, err = tx.Exec(query, notetype.ID); err != nil {
+			if err = sqlExecute(tx, query, notetype.ID); err != nil {
 				return err
 			}
 		}
@@ -139,9 +151,7 @@ func addField(tx *sql.Tx, notetypeID int64, field *Field) error {
 	if err != nil {
 		return err
 	}
-
-	_, err = tx.Exec(query, notetypeID, field.Ordinal, field.Name, config)
-	return err
+	return sqlExecute(tx, query, notetypeID, field.Ordinal, field.Name, config)
 }
 
 func listFields(q sqlQueryer, notetypeID int64) ([]*Field, error) {
@@ -170,8 +180,15 @@ func addTemplate(tx *sql.Tx, notetypeID int64, template *Template) error {
 		return err
 	}
 
-	_, err = tx.Exec(query, notetypeID, template.Ordinal, template.Name, template.Modified.Unix(), template.USN, config)
-	return err
+	args := []any{
+		notetypeID,
+		template.Ordinal,
+		template.Name,
+		template.Modified.Unix(),
+		template.USN,
+		config,
+	}
+	return sqlExecute(tx, query, args...)
 }
 
 func listTemplates(q sqlQueryer, notetypeID int64) ([]*Template, error) {

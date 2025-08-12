@@ -61,8 +61,7 @@ func (c *Collection) UpdateCard(card *Card) error {
 }
 
 func (c *Collection) DeleteCard(id int64) error {
-	_, err := c.db.Exec("DELETE FROM cards WHERE id = ?", id)
-	return err
+	return sqlExecute(c.db, "DELETE FROM cards WHERE id = ?", id)
 }
 
 func (c *Collection) ListCards() iter.Seq2[*Card, error] {

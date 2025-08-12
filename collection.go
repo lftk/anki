@@ -178,8 +178,7 @@ func (c *Collection) Close() error {
 }
 
 func (c *Collection) flush() error {
-	_, err := c.db.Exec("PRAGMA wal_checkpoint(FULL);")
-	return err
+	return sqlExecute(c.db, "PRAGMA wal_checkpoint(FULL)")
 }
 
 func (c *Collection) USN() int64 {

@@ -64,6 +64,7 @@ func zipWrite(w *zip.Writer, name string, comp bool, data []byte) error {
 		return err
 	}
 	defer zw.Close()
+
 	_, err = zw.Write(data)
 	return err
 }
