@@ -7,8 +7,6 @@ import (
 	"io"
 	"os"
 	"time"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 //go:embed schema.sql
