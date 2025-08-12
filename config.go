@@ -1,47 +1,48 @@
 package anki
 
 import (
-	"strconv"
+	"iter"
 	"time"
 )
 
-func (c *Collection) GetConfig(key string) ([]byte, error) {
-	var val []byte
-	err := c.db.QueryRow("SELECT val FROM config WHERE key = ?", key).Scan(&val)
-	return val, err
+type Config struct {
+	Key      string
+	Value    []byte
+	USN      int64
+	Modified time.Time
 }
 
-func (c *Collection) SetConfig(key string, value []byte) error {
-	_, err := c.db.Exec("REPLACE INTO config (key, usn, mtime_secs, val) VALUES (?, ?, ?, ?)",
-		key, -1, time.Now().Unix(), value)
-	return err
+func (c *Collection) SetConfig(config *Config) error {
+	const query = `
+INSERT
+  OR REPLACE INTO config (key, usn, mtime_secs, val)
+VALUES (?, ?, ?, ?)	
+`
+	return sqlExecute(c.db, query, config.Key, config.USN, config.Modified.Unix(), config.Value)
 }
 
-func (c *Collection) RemoveConfig(key string) error {
-	_, err := c.db.Exec("DELETE FROM config WHERE key = ?", key)
-	return err
+func (c *Collection) GetConfig(key string) (*Config, error) {
+	const query = `SELECT key, usn, mtime_secs, val FROM config WHERE key = ?`
+
+	return sqlGet(c.db, scanConfig, query, key)
 }
 
-func (c *Collection) GetConfigString(key string) (string, error) {
-	val, err := c.GetConfig(key)
-	if err != nil {
-		return "", err
+func (c *Collection) DeleteConfig(key string) error {
+	return sqlExecute(c.db, "DELETE FROM config WHERE key = ?", key)
+}
+
+func (c *Collection) ListConfigs() iter.Seq2[*Config, error] {
+	const query = `SELECT key, usn, mtime_secs, val FROM config`
+
+	return sqlSelectSeq(c.db, scanConfig, query)
+}
+
+func scanConfig(_ sqlQueryer, row sqlRow) (*Config, error) {
+	var c Config
+	var mod int64
+	if err := row.Scan(&c.Key, &c.USN, &mod, &c.Value); err != nil {
+		return nil, err
 	}
-	return string(val), nil
-}
-
-func (c *Collection) SetConfigString(key, value string) error {
-	return c.SetConfig(key, []byte(value))
-}
-
-func (c *Collection) GetConfigBool(key string) (bool, error) {
-	val, err := c.GetConfig(key)
-	if err != nil {
-		return false, err
-	}
-	return strconv.ParseBool(string(val))
-}
-
-func (c *Collection) SetConfigBool(key string, value bool) error {
-	return c.SetConfig(key, []byte(strconv.FormatBool(value)))
+	c.Modified = time.Unix(mod, 0)
+	return &c, nil
 }

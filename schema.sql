@@ -91,6 +91,12 @@ CREATE TABLE graves (
   oid integer NOT NULL,
   type integer NOT NULL
 );
+CREATE TABLE config (
+  KEY text NOT NULL PRIMARY KEY,
+  usn integer NOT NULL,
+  mtime_secs integer NOT NULL,
+  val blob NOT NULL
+) without rowid;
 -- syncing
 CREATE INDEX ix_notes_usn ON notes (usn);
 CREATE INDEX ix_cards_usn ON cards (usn);
