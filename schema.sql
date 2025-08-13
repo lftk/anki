@@ -103,6 +103,13 @@ CREATE TABLE tags (
   collapsed boolean NOT NULL,
   config blob NULL
 ) without rowid;
+CREATE TABLE deck_config (
+  id integer PRIMARY KEY NOT NULL,
+  name text NOT NULL COLLATE unicase,
+  mtime_secs integer NOT NULL,
+  usn integer NOT NULL,
+  config blob NOT NULL
+);
 -- syncing
 CREATE INDEX ix_notes_usn ON notes (usn);
 CREATE INDEX ix_cards_usn ON cards (usn);

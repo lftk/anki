@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v5.29.3
-// source: anki.proto
+// source: internal/pb/anki.proto
 
 package pb
 
@@ -66,11 +66,11 @@ func (x StockNotetype_OriginalStockKind) String() string {
 }
 
 func (StockNotetype_OriginalStockKind) Descriptor() protoreflect.EnumDescriptor {
-	return file_anki_proto_enumTypes[0].Descriptor()
+	return file_internal_pb_anki_proto_enumTypes[0].Descriptor()
 }
 
 func (StockNotetype_OriginalStockKind) Type() protoreflect.EnumType {
-	return &file_anki_proto_enumTypes[0]
+	return &file_internal_pb_anki_proto_enumTypes[0]
 }
 
 func (x StockNotetype_OriginalStockKind) Number() protoreflect.EnumNumber {
@@ -79,7 +79,7 @@ func (x StockNotetype_OriginalStockKind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use StockNotetype_OriginalStockKind.Descriptor instead.
 func (StockNotetype_OriginalStockKind) EnumDescriptor() ([]byte, []int) {
-	return file_anki_proto_rawDescGZIP(), []int{0, 0}
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{0, 0}
 }
 
 type NotetypeConfig_Kind int32
@@ -112,11 +112,11 @@ func (x NotetypeConfig_Kind) String() string {
 }
 
 func (NotetypeConfig_Kind) Descriptor() protoreflect.EnumDescriptor {
-	return file_anki_proto_enumTypes[1].Descriptor()
+	return file_internal_pb_anki_proto_enumTypes[1].Descriptor()
 }
 
 func (NotetypeConfig_Kind) Type() protoreflect.EnumType {
-	return &file_anki_proto_enumTypes[1]
+	return &file_internal_pb_anki_proto_enumTypes[1]
 }
 
 func (x NotetypeConfig_Kind) Number() protoreflect.EnumNumber {
@@ -125,7 +125,7 @@ func (x NotetypeConfig_Kind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use NotetypeConfig_Kind.Descriptor instead.
 func (NotetypeConfig_Kind) EnumDescriptor() ([]byte, []int) {
-	return file_anki_proto_rawDescGZIP(), []int{1, 0}
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{1, 0}
 }
 
 type NotetypeConfig_CardRequirement_Kind int32
@@ -161,11 +161,11 @@ func (x NotetypeConfig_CardRequirement_Kind) String() string {
 }
 
 func (NotetypeConfig_CardRequirement_Kind) Descriptor() protoreflect.EnumDescriptor {
-	return file_anki_proto_enumTypes[2].Descriptor()
+	return file_internal_pb_anki_proto_enumTypes[2].Descriptor()
 }
 
 func (NotetypeConfig_CardRequirement_Kind) Type() protoreflect.EnumType {
-	return &file_anki_proto_enumTypes[2]
+	return &file_internal_pb_anki_proto_enumTypes[2]
 }
 
 func (x NotetypeConfig_CardRequirement_Kind) Number() protoreflect.EnumNumber {
@@ -174,7 +174,455 @@ func (x NotetypeConfig_CardRequirement_Kind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use NotetypeConfig_CardRequirement_Kind.Descriptor instead.
 func (NotetypeConfig_CardRequirement_Kind) EnumDescriptor() ([]byte, []int) {
-	return file_anki_proto_rawDescGZIP(), []int{1, 0, 0}
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{1, 0, 0}
+}
+
+type DeckConfig_NewCardInsertOrder int32
+
+const (
+	DeckConfig_NEW_CARD_INSERT_ORDER_DUE    DeckConfig_NewCardInsertOrder = 0
+	DeckConfig_NEW_CARD_INSERT_ORDER_RANDOM DeckConfig_NewCardInsertOrder = 1
+)
+
+// Enum value maps for DeckConfig_NewCardInsertOrder.
+var (
+	DeckConfig_NewCardInsertOrder_name = map[int32]string{
+		0: "NEW_CARD_INSERT_ORDER_DUE",
+		1: "NEW_CARD_INSERT_ORDER_RANDOM",
+	}
+	DeckConfig_NewCardInsertOrder_value = map[string]int32{
+		"NEW_CARD_INSERT_ORDER_DUE":    0,
+		"NEW_CARD_INSERT_ORDER_RANDOM": 1,
+	}
+)
+
+func (x DeckConfig_NewCardInsertOrder) Enum() *DeckConfig_NewCardInsertOrder {
+	p := new(DeckConfig_NewCardInsertOrder)
+	*p = x
+	return p
+}
+
+func (x DeckConfig_NewCardInsertOrder) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeckConfig_NewCardInsertOrder) Descriptor() protoreflect.EnumDescriptor {
+	return file_internal_pb_anki_proto_enumTypes[3].Descriptor()
+}
+
+func (DeckConfig_NewCardInsertOrder) Type() protoreflect.EnumType {
+	return &file_internal_pb_anki_proto_enumTypes[3]
+}
+
+func (x DeckConfig_NewCardInsertOrder) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeckConfig_NewCardInsertOrder.Descriptor instead.
+func (DeckConfig_NewCardInsertOrder) EnumDescriptor() ([]byte, []int) {
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{4, 0}
+}
+
+type DeckConfig_NewCardGatherPriority int32
+
+const (
+	// Decks in alphabetical order (preorder), then ascending position.
+	// Siblings are consecutive, provided they have the same position.
+	DeckConfig_NEW_CARD_GATHER_PRIORITY_DECK DeckConfig_NewCardGatherPriority = 0
+	// Notes are randomly picked from each deck in alphabetical order.
+	// Siblings are consecutive, provided they have the same position.
+	DeckConfig_NEW_CARD_GATHER_PRIORITY_DECK_THEN_RANDOM_NOTES DeckConfig_NewCardGatherPriority = 5
+	// Ascending position.
+	// Siblings are consecutive, provided they have the same position.
+	DeckConfig_NEW_CARD_GATHER_PRIORITY_LOWEST_POSITION DeckConfig_NewCardGatherPriority = 1
+	// Descending position.
+	// Siblings are consecutive, provided they have the same position.
+	DeckConfig_NEW_CARD_GATHER_PRIORITY_HIGHEST_POSITION DeckConfig_NewCardGatherPriority = 2
+	// Siblings are consecutive.
+	DeckConfig_NEW_CARD_GATHER_PRIORITY_RANDOM_NOTES DeckConfig_NewCardGatherPriority = 3
+	// Siblings are neither grouped nor ordered.
+	DeckConfig_NEW_CARD_GATHER_PRIORITY_RANDOM_CARDS DeckConfig_NewCardGatherPriority = 4
+)
+
+// Enum value maps for DeckConfig_NewCardGatherPriority.
+var (
+	DeckConfig_NewCardGatherPriority_name = map[int32]string{
+		0: "NEW_CARD_GATHER_PRIORITY_DECK",
+		5: "NEW_CARD_GATHER_PRIORITY_DECK_THEN_RANDOM_NOTES",
+		1: "NEW_CARD_GATHER_PRIORITY_LOWEST_POSITION",
+		2: "NEW_CARD_GATHER_PRIORITY_HIGHEST_POSITION",
+		3: "NEW_CARD_GATHER_PRIORITY_RANDOM_NOTES",
+		4: "NEW_CARD_GATHER_PRIORITY_RANDOM_CARDS",
+	}
+	DeckConfig_NewCardGatherPriority_value = map[string]int32{
+		"NEW_CARD_GATHER_PRIORITY_DECK":                   0,
+		"NEW_CARD_GATHER_PRIORITY_DECK_THEN_RANDOM_NOTES": 5,
+		"NEW_CARD_GATHER_PRIORITY_LOWEST_POSITION":        1,
+		"NEW_CARD_GATHER_PRIORITY_HIGHEST_POSITION":       2,
+		"NEW_CARD_GATHER_PRIORITY_RANDOM_NOTES":           3,
+		"NEW_CARD_GATHER_PRIORITY_RANDOM_CARDS":           4,
+	}
+)
+
+func (x DeckConfig_NewCardGatherPriority) Enum() *DeckConfig_NewCardGatherPriority {
+	p := new(DeckConfig_NewCardGatherPriority)
+	*p = x
+	return p
+}
+
+func (x DeckConfig_NewCardGatherPriority) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeckConfig_NewCardGatherPriority) Descriptor() protoreflect.EnumDescriptor {
+	return file_internal_pb_anki_proto_enumTypes[4].Descriptor()
+}
+
+func (DeckConfig_NewCardGatherPriority) Type() protoreflect.EnumType {
+	return &file_internal_pb_anki_proto_enumTypes[4]
+}
+
+func (x DeckConfig_NewCardGatherPriority) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeckConfig_NewCardGatherPriority.Descriptor instead.
+func (DeckConfig_NewCardGatherPriority) EnumDescriptor() ([]byte, []int) {
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{4, 1}
+}
+
+type DeckConfig_NewCardSortOrder int32
+
+const (
+	// Ascending card template ordinal.
+	// For a given ordinal, cards appear in gather order.
+	DeckConfig_NEW_CARD_SORT_ORDER_TEMPLATE DeckConfig_NewCardSortOrder = 0
+	// Preserves original gather order (eg deck order).
+	DeckConfig_NEW_CARD_SORT_ORDER_NO_SORT DeckConfig_NewCardSortOrder = 1
+	// Ascending card template ordinal.
+	// For a given ordinal, cards appear in random order.
+	DeckConfig_NEW_CARD_SORT_ORDER_TEMPLATE_THEN_RANDOM DeckConfig_NewCardSortOrder = 2
+	// Random note order. For a given note, cards appear in template order.
+	DeckConfig_NEW_CARD_SORT_ORDER_RANDOM_NOTE_THEN_TEMPLATE DeckConfig_NewCardSortOrder = 3
+	// Fully randomized order.
+	DeckConfig_NEW_CARD_SORT_ORDER_RANDOM_CARD DeckConfig_NewCardSortOrder = 4
+)
+
+// Enum value maps for DeckConfig_NewCardSortOrder.
+var (
+	DeckConfig_NewCardSortOrder_name = map[int32]string{
+		0: "NEW_CARD_SORT_ORDER_TEMPLATE",
+		1: "NEW_CARD_SORT_ORDER_NO_SORT",
+		2: "NEW_CARD_SORT_ORDER_TEMPLATE_THEN_RANDOM",
+		3: "NEW_CARD_SORT_ORDER_RANDOM_NOTE_THEN_TEMPLATE",
+		4: "NEW_CARD_SORT_ORDER_RANDOM_CARD",
+	}
+	DeckConfig_NewCardSortOrder_value = map[string]int32{
+		"NEW_CARD_SORT_ORDER_TEMPLATE":                  0,
+		"NEW_CARD_SORT_ORDER_NO_SORT":                   1,
+		"NEW_CARD_SORT_ORDER_TEMPLATE_THEN_RANDOM":      2,
+		"NEW_CARD_SORT_ORDER_RANDOM_NOTE_THEN_TEMPLATE": 3,
+		"NEW_CARD_SORT_ORDER_RANDOM_CARD":               4,
+	}
+)
+
+func (x DeckConfig_NewCardSortOrder) Enum() *DeckConfig_NewCardSortOrder {
+	p := new(DeckConfig_NewCardSortOrder)
+	*p = x
+	return p
+}
+
+func (x DeckConfig_NewCardSortOrder) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeckConfig_NewCardSortOrder) Descriptor() protoreflect.EnumDescriptor {
+	return file_internal_pb_anki_proto_enumTypes[5].Descriptor()
+}
+
+func (DeckConfig_NewCardSortOrder) Type() protoreflect.EnumType {
+	return &file_internal_pb_anki_proto_enumTypes[5]
+}
+
+func (x DeckConfig_NewCardSortOrder) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeckConfig_NewCardSortOrder.Descriptor instead.
+func (DeckConfig_NewCardSortOrder) EnumDescriptor() ([]byte, []int) {
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{4, 2}
+}
+
+type DeckConfig_ReviewCardOrder int32
+
+const (
+	DeckConfig_REVIEW_CARD_ORDER_DAY                       DeckConfig_ReviewCardOrder = 0
+	DeckConfig_REVIEW_CARD_ORDER_DAY_THEN_DECK             DeckConfig_ReviewCardOrder = 1
+	DeckConfig_REVIEW_CARD_ORDER_DECK_THEN_DAY             DeckConfig_ReviewCardOrder = 2
+	DeckConfig_REVIEW_CARD_ORDER_INTERVALS_ASCENDING       DeckConfig_ReviewCardOrder = 3
+	DeckConfig_REVIEW_CARD_ORDER_INTERVALS_DESCENDING      DeckConfig_ReviewCardOrder = 4
+	DeckConfig_REVIEW_CARD_ORDER_EASE_ASCENDING            DeckConfig_ReviewCardOrder = 5
+	DeckConfig_REVIEW_CARD_ORDER_EASE_DESCENDING           DeckConfig_ReviewCardOrder = 6
+	DeckConfig_REVIEW_CARD_ORDER_RETRIEVABILITY_ASCENDING  DeckConfig_ReviewCardOrder = 7
+	DeckConfig_REVIEW_CARD_ORDER_RETRIEVABILITY_DESCENDING DeckConfig_ReviewCardOrder = 11
+	DeckConfig_REVIEW_CARD_ORDER_RANDOM                    DeckConfig_ReviewCardOrder = 8
+	DeckConfig_REVIEW_CARD_ORDER_ADDED                     DeckConfig_ReviewCardOrder = 9
+	DeckConfig_REVIEW_CARD_ORDER_REVERSE_ADDED             DeckConfig_ReviewCardOrder = 10
+)
+
+// Enum value maps for DeckConfig_ReviewCardOrder.
+var (
+	DeckConfig_ReviewCardOrder_name = map[int32]string{
+		0:  "REVIEW_CARD_ORDER_DAY",
+		1:  "REVIEW_CARD_ORDER_DAY_THEN_DECK",
+		2:  "REVIEW_CARD_ORDER_DECK_THEN_DAY",
+		3:  "REVIEW_CARD_ORDER_INTERVALS_ASCENDING",
+		4:  "REVIEW_CARD_ORDER_INTERVALS_DESCENDING",
+		5:  "REVIEW_CARD_ORDER_EASE_ASCENDING",
+		6:  "REVIEW_CARD_ORDER_EASE_DESCENDING",
+		7:  "REVIEW_CARD_ORDER_RETRIEVABILITY_ASCENDING",
+		11: "REVIEW_CARD_ORDER_RETRIEVABILITY_DESCENDING",
+		8:  "REVIEW_CARD_ORDER_RANDOM",
+		9:  "REVIEW_CARD_ORDER_ADDED",
+		10: "REVIEW_CARD_ORDER_REVERSE_ADDED",
+	}
+	DeckConfig_ReviewCardOrder_value = map[string]int32{
+		"REVIEW_CARD_ORDER_DAY":                       0,
+		"REVIEW_CARD_ORDER_DAY_THEN_DECK":             1,
+		"REVIEW_CARD_ORDER_DECK_THEN_DAY":             2,
+		"REVIEW_CARD_ORDER_INTERVALS_ASCENDING":       3,
+		"REVIEW_CARD_ORDER_INTERVALS_DESCENDING":      4,
+		"REVIEW_CARD_ORDER_EASE_ASCENDING":            5,
+		"REVIEW_CARD_ORDER_EASE_DESCENDING":           6,
+		"REVIEW_CARD_ORDER_RETRIEVABILITY_ASCENDING":  7,
+		"REVIEW_CARD_ORDER_RETRIEVABILITY_DESCENDING": 11,
+		"REVIEW_CARD_ORDER_RANDOM":                    8,
+		"REVIEW_CARD_ORDER_ADDED":                     9,
+		"REVIEW_CARD_ORDER_REVERSE_ADDED":             10,
+	}
+)
+
+func (x DeckConfig_ReviewCardOrder) Enum() *DeckConfig_ReviewCardOrder {
+	p := new(DeckConfig_ReviewCardOrder)
+	*p = x
+	return p
+}
+
+func (x DeckConfig_ReviewCardOrder) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeckConfig_ReviewCardOrder) Descriptor() protoreflect.EnumDescriptor {
+	return file_internal_pb_anki_proto_enumTypes[6].Descriptor()
+}
+
+func (DeckConfig_ReviewCardOrder) Type() protoreflect.EnumType {
+	return &file_internal_pb_anki_proto_enumTypes[6]
+}
+
+func (x DeckConfig_ReviewCardOrder) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeckConfig_ReviewCardOrder.Descriptor instead.
+func (DeckConfig_ReviewCardOrder) EnumDescriptor() ([]byte, []int) {
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{4, 3}
+}
+
+type DeckConfig_ReviewMix int32
+
+const (
+	DeckConfig_REVIEW_MIX_MIX_WITH_REVIEWS DeckConfig_ReviewMix = 0
+	DeckConfig_REVIEW_MIX_AFTER_REVIEWS    DeckConfig_ReviewMix = 1
+	DeckConfig_REVIEW_MIX_BEFORE_REVIEWS   DeckConfig_ReviewMix = 2
+)
+
+// Enum value maps for DeckConfig_ReviewMix.
+var (
+	DeckConfig_ReviewMix_name = map[int32]string{
+		0: "REVIEW_MIX_MIX_WITH_REVIEWS",
+		1: "REVIEW_MIX_AFTER_REVIEWS",
+		2: "REVIEW_MIX_BEFORE_REVIEWS",
+	}
+	DeckConfig_ReviewMix_value = map[string]int32{
+		"REVIEW_MIX_MIX_WITH_REVIEWS": 0,
+		"REVIEW_MIX_AFTER_REVIEWS":    1,
+		"REVIEW_MIX_BEFORE_REVIEWS":   2,
+	}
+)
+
+func (x DeckConfig_ReviewMix) Enum() *DeckConfig_ReviewMix {
+	p := new(DeckConfig_ReviewMix)
+	*p = x
+	return p
+}
+
+func (x DeckConfig_ReviewMix) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeckConfig_ReviewMix) Descriptor() protoreflect.EnumDescriptor {
+	return file_internal_pb_anki_proto_enumTypes[7].Descriptor()
+}
+
+func (DeckConfig_ReviewMix) Type() protoreflect.EnumType {
+	return &file_internal_pb_anki_proto_enumTypes[7]
+}
+
+func (x DeckConfig_ReviewMix) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeckConfig_ReviewMix.Descriptor instead.
+func (DeckConfig_ReviewMix) EnumDescriptor() ([]byte, []int) {
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{4, 4}
+}
+
+type DeckConfig_LeechAction int32
+
+const (
+	DeckConfig_LEECH_ACTION_SUSPEND  DeckConfig_LeechAction = 0
+	DeckConfig_LEECH_ACTION_TAG_ONLY DeckConfig_LeechAction = 1
+)
+
+// Enum value maps for DeckConfig_LeechAction.
+var (
+	DeckConfig_LeechAction_name = map[int32]string{
+		0: "LEECH_ACTION_SUSPEND",
+		1: "LEECH_ACTION_TAG_ONLY",
+	}
+	DeckConfig_LeechAction_value = map[string]int32{
+		"LEECH_ACTION_SUSPEND":  0,
+		"LEECH_ACTION_TAG_ONLY": 1,
+	}
+)
+
+func (x DeckConfig_LeechAction) Enum() *DeckConfig_LeechAction {
+	p := new(DeckConfig_LeechAction)
+	*p = x
+	return p
+}
+
+func (x DeckConfig_LeechAction) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeckConfig_LeechAction) Descriptor() protoreflect.EnumDescriptor {
+	return file_internal_pb_anki_proto_enumTypes[8].Descriptor()
+}
+
+func (DeckConfig_LeechAction) Type() protoreflect.EnumType {
+	return &file_internal_pb_anki_proto_enumTypes[8]
+}
+
+func (x DeckConfig_LeechAction) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeckConfig_LeechAction.Descriptor instead.
+func (DeckConfig_LeechAction) EnumDescriptor() ([]byte, []int) {
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{4, 5}
+}
+
+type DeckConfig_AnswerAction int32
+
+const (
+	DeckConfig_ANSWER_ACTION_BURY_CARD     DeckConfig_AnswerAction = 0
+	DeckConfig_ANSWER_ACTION_ANSWER_AGAIN  DeckConfig_AnswerAction = 1
+	DeckConfig_ANSWER_ACTION_ANSWER_GOOD   DeckConfig_AnswerAction = 2
+	DeckConfig_ANSWER_ACTION_ANSWER_HARD   DeckConfig_AnswerAction = 3
+	DeckConfig_ANSWER_ACTION_SHOW_REMINDER DeckConfig_AnswerAction = 4
+)
+
+// Enum value maps for DeckConfig_AnswerAction.
+var (
+	DeckConfig_AnswerAction_name = map[int32]string{
+		0: "ANSWER_ACTION_BURY_CARD",
+		1: "ANSWER_ACTION_ANSWER_AGAIN",
+		2: "ANSWER_ACTION_ANSWER_GOOD",
+		3: "ANSWER_ACTION_ANSWER_HARD",
+		4: "ANSWER_ACTION_SHOW_REMINDER",
+	}
+	DeckConfig_AnswerAction_value = map[string]int32{
+		"ANSWER_ACTION_BURY_CARD":     0,
+		"ANSWER_ACTION_ANSWER_AGAIN":  1,
+		"ANSWER_ACTION_ANSWER_GOOD":   2,
+		"ANSWER_ACTION_ANSWER_HARD":   3,
+		"ANSWER_ACTION_SHOW_REMINDER": 4,
+	}
+)
+
+func (x DeckConfig_AnswerAction) Enum() *DeckConfig_AnswerAction {
+	p := new(DeckConfig_AnswerAction)
+	*p = x
+	return p
+}
+
+func (x DeckConfig_AnswerAction) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeckConfig_AnswerAction) Descriptor() protoreflect.EnumDescriptor {
+	return file_internal_pb_anki_proto_enumTypes[9].Descriptor()
+}
+
+func (DeckConfig_AnswerAction) Type() protoreflect.EnumType {
+	return &file_internal_pb_anki_proto_enumTypes[9]
+}
+
+func (x DeckConfig_AnswerAction) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeckConfig_AnswerAction.Descriptor instead.
+func (DeckConfig_AnswerAction) EnumDescriptor() ([]byte, []int) {
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{4, 6}
+}
+
+type DeckConfig_QuestionAction int32
+
+const (
+	DeckConfig_QUESTION_ACTION_SHOW_ANSWER   DeckConfig_QuestionAction = 0
+	DeckConfig_QUESTION_ACTION_SHOW_REMINDER DeckConfig_QuestionAction = 1
+)
+
+// Enum value maps for DeckConfig_QuestionAction.
+var (
+	DeckConfig_QuestionAction_name = map[int32]string{
+		0: "QUESTION_ACTION_SHOW_ANSWER",
+		1: "QUESTION_ACTION_SHOW_REMINDER",
+	}
+	DeckConfig_QuestionAction_value = map[string]int32{
+		"QUESTION_ACTION_SHOW_ANSWER":   0,
+		"QUESTION_ACTION_SHOW_REMINDER": 1,
+	}
+)
+
+func (x DeckConfig_QuestionAction) Enum() *DeckConfig_QuestionAction {
+	p := new(DeckConfig_QuestionAction)
+	*p = x
+	return p
+}
+
+func (x DeckConfig_QuestionAction) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeckConfig_QuestionAction) Descriptor() protoreflect.EnumDescriptor {
+	return file_internal_pb_anki_proto_enumTypes[10].Descriptor()
+}
+
+func (DeckConfig_QuestionAction) Type() protoreflect.EnumType {
+	return &file_internal_pb_anki_proto_enumTypes[10]
+}
+
+func (x DeckConfig_QuestionAction) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeckConfig_QuestionAction.Descriptor instead.
+func (DeckConfig_QuestionAction) EnumDescriptor() ([]byte, []int) {
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{4, 7}
 }
 
 type PackageMetadata_Version int32
@@ -213,11 +661,11 @@ func (x PackageMetadata_Version) String() string {
 }
 
 func (PackageMetadata_Version) Descriptor() protoreflect.EnumDescriptor {
-	return file_anki_proto_enumTypes[3].Descriptor()
+	return file_internal_pb_anki_proto_enumTypes[11].Descriptor()
 }
 
 func (PackageMetadata_Version) Type() protoreflect.EnumType {
-	return &file_anki_proto_enumTypes[3]
+	return &file_internal_pb_anki_proto_enumTypes[11]
 }
 
 func (x PackageMetadata_Version) Number() protoreflect.EnumNumber {
@@ -226,7 +674,7 @@ func (x PackageMetadata_Version) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PackageMetadata_Version.Descriptor instead.
 func (PackageMetadata_Version) EnumDescriptor() ([]byte, []int) {
-	return file_anki_proto_rawDescGZIP(), []int{4, 0}
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{5, 0}
 }
 
 type StockNotetype struct {
@@ -237,7 +685,7 @@ type StockNotetype struct {
 
 func (x *StockNotetype) Reset() {
 	*x = StockNotetype{}
-	mi := &file_anki_proto_msgTypes[0]
+	mi := &file_internal_pb_anki_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -249,7 +697,7 @@ func (x *StockNotetype) String() string {
 func (*StockNotetype) ProtoMessage() {}
 
 func (x *StockNotetype) ProtoReflect() protoreflect.Message {
-	mi := &file_anki_proto_msgTypes[0]
+	mi := &file_internal_pb_anki_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -262,7 +710,7 @@ func (x *StockNotetype) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StockNotetype.ProtoReflect.Descriptor instead.
 func (*StockNotetype) Descriptor() ([]byte, []int) {
-	return file_anki_proto_rawDescGZIP(), []int{0}
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{0}
 }
 
 type NotetypeConfig struct {
@@ -284,7 +732,7 @@ type NotetypeConfig struct {
 
 func (x *NotetypeConfig) Reset() {
 	*x = NotetypeConfig{}
-	mi := &file_anki_proto_msgTypes[1]
+	mi := &file_internal_pb_anki_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -296,7 +744,7 @@ func (x *NotetypeConfig) String() string {
 func (*NotetypeConfig) ProtoMessage() {}
 
 func (x *NotetypeConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_anki_proto_msgTypes[1]
+	mi := &file_internal_pb_anki_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -309,7 +757,7 @@ func (x *NotetypeConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NotetypeConfig.ProtoReflect.Descriptor instead.
 func (*NotetypeConfig) Descriptor() ([]byte, []int) {
-	return file_anki_proto_rawDescGZIP(), []int{1}
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *NotetypeConfig) GetKind() NotetypeConfig_Kind {
@@ -409,7 +857,7 @@ type FieldConfig struct {
 
 func (x *FieldConfig) Reset() {
 	*x = FieldConfig{}
-	mi := &file_anki_proto_msgTypes[2]
+	mi := &file_internal_pb_anki_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -421,7 +869,7 @@ func (x *FieldConfig) String() string {
 func (*FieldConfig) ProtoMessage() {}
 
 func (x *FieldConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_anki_proto_msgTypes[2]
+	mi := &file_internal_pb_anki_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -434,7 +882,7 @@ func (x *FieldConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FieldConfig.ProtoReflect.Descriptor instead.
 func (*FieldConfig) Descriptor() ([]byte, []int) {
-	return file_anki_proto_rawDescGZIP(), []int{2}
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *FieldConfig) GetSticky() bool {
@@ -538,7 +986,7 @@ type TemplateConfig struct {
 
 func (x *TemplateConfig) Reset() {
 	*x = TemplateConfig{}
-	mi := &file_anki_proto_msgTypes[3]
+	mi := &file_internal_pb_anki_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -550,7 +998,7 @@ func (x *TemplateConfig) String() string {
 func (*TemplateConfig) ProtoMessage() {}
 
 func (x *TemplateConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_anki_proto_msgTypes[3]
+	mi := &file_internal_pb_anki_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -563,7 +1011,7 @@ func (x *TemplateConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TemplateConfig.ProtoReflect.Descriptor instead.
 func (*TemplateConfig) Descriptor() ([]byte, []int) {
-	return file_anki_proto_rawDescGZIP(), []int{3}
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *TemplateConfig) GetQFormat() string {
@@ -629,6 +1077,396 @@ func (x *TemplateConfig) GetOther() []byte {
 	return nil
 }
 
+type DeckConfig struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LearnSteps    []float32              `protobuf:"fixed32,1,rep,packed,name=learn_steps,json=learnSteps,proto3" json:"learn_steps,omitempty"`
+	RelearnSteps  []float32              `protobuf:"fixed32,2,rep,packed,name=relearn_steps,json=relearnSteps,proto3" json:"relearn_steps,omitempty"`
+	FsrsParams_4  []float32              `protobuf:"fixed32,3,rep,packed,name=fsrs_params_4,json=fsrsParams4,proto3" json:"fsrs_params_4,omitempty"`
+	FsrsParams_5  []float32              `protobuf:"fixed32,5,rep,packed,name=fsrs_params_5,json=fsrsParams5,proto3" json:"fsrs_params_5,omitempty"`
+	FsrsParams_6  []float32              `protobuf:"fixed32,6,rep,packed,name=fsrs_params_6,json=fsrsParams6,proto3" json:"fsrs_params_6,omitempty"`
+	NewPerDay     uint32                 `protobuf:"varint,9,opt,name=new_per_day,json=newPerDay,proto3" json:"new_per_day,omitempty"`
+	ReviewsPerDay uint32                 `protobuf:"varint,10,opt,name=reviews_per_day,json=reviewsPerDay,proto3" json:"reviews_per_day,omitempty"`
+	// not currently used
+	NewPerDayMinimum                uint32                           `protobuf:"varint,35,opt,name=new_per_day_minimum,json=newPerDayMinimum,proto3" json:"new_per_day_minimum,omitempty"`
+	InitialEase                     float32                          `protobuf:"fixed32,11,opt,name=initial_ease,json=initialEase,proto3" json:"initial_ease,omitempty"`
+	EasyMultiplier                  float32                          `protobuf:"fixed32,12,opt,name=easy_multiplier,json=easyMultiplier,proto3" json:"easy_multiplier,omitempty"`
+	HardMultiplier                  float32                          `protobuf:"fixed32,13,opt,name=hard_multiplier,json=hardMultiplier,proto3" json:"hard_multiplier,omitempty"`
+	LapseMultiplier                 float32                          `protobuf:"fixed32,14,opt,name=lapse_multiplier,json=lapseMultiplier,proto3" json:"lapse_multiplier,omitempty"`
+	IntervalMultiplier              float32                          `protobuf:"fixed32,15,opt,name=interval_multiplier,json=intervalMultiplier,proto3" json:"interval_multiplier,omitempty"`
+	MaximumReviewInterval           uint32                           `protobuf:"varint,16,opt,name=maximum_review_interval,json=maximumReviewInterval,proto3" json:"maximum_review_interval,omitempty"`
+	MinimumLapseInterval            uint32                           `protobuf:"varint,17,opt,name=minimum_lapse_interval,json=minimumLapseInterval,proto3" json:"minimum_lapse_interval,omitempty"`
+	GraduatingIntervalGood          uint32                           `protobuf:"varint,18,opt,name=graduating_interval_good,json=graduatingIntervalGood,proto3" json:"graduating_interval_good,omitempty"`
+	GraduatingIntervalEasy          uint32                           `protobuf:"varint,19,opt,name=graduating_interval_easy,json=graduatingIntervalEasy,proto3" json:"graduating_interval_easy,omitempty"`
+	NewCardInsertOrder              DeckConfig_NewCardInsertOrder    `protobuf:"varint,20,opt,name=new_card_insert_order,json=newCardInsertOrder,proto3,enum=pb.DeckConfig_NewCardInsertOrder" json:"new_card_insert_order,omitempty"`
+	NewCardGatherPriority           DeckConfig_NewCardGatherPriority `protobuf:"varint,34,opt,name=new_card_gather_priority,json=newCardGatherPriority,proto3,enum=pb.DeckConfig_NewCardGatherPriority" json:"new_card_gather_priority,omitempty"`
+	NewCardSortOrder                DeckConfig_NewCardSortOrder      `protobuf:"varint,32,opt,name=new_card_sort_order,json=newCardSortOrder,proto3,enum=pb.DeckConfig_NewCardSortOrder" json:"new_card_sort_order,omitempty"`
+	NewMix                          DeckConfig_ReviewMix             `protobuf:"varint,30,opt,name=new_mix,json=newMix,proto3,enum=pb.DeckConfig_ReviewMix" json:"new_mix,omitempty"`
+	ReviewOrder                     DeckConfig_ReviewCardOrder       `protobuf:"varint,33,opt,name=review_order,json=reviewOrder,proto3,enum=pb.DeckConfig_ReviewCardOrder" json:"review_order,omitempty"`
+	InterdayLearningMix             DeckConfig_ReviewMix             `protobuf:"varint,31,opt,name=interday_learning_mix,json=interdayLearningMix,proto3,enum=pb.DeckConfig_ReviewMix" json:"interday_learning_mix,omitempty"`
+	LeechAction                     DeckConfig_LeechAction           `protobuf:"varint,21,opt,name=leech_action,json=leechAction,proto3,enum=pb.DeckConfig_LeechAction" json:"leech_action,omitempty"`
+	LeechThreshold                  uint32                           `protobuf:"varint,22,opt,name=leech_threshold,json=leechThreshold,proto3" json:"leech_threshold,omitempty"`
+	DisableAutoplay                 bool                             `protobuf:"varint,23,opt,name=disable_autoplay,json=disableAutoplay,proto3" json:"disable_autoplay,omitempty"`
+	CapAnswerTimeToSecs             uint32                           `protobuf:"varint,24,opt,name=cap_answer_time_to_secs,json=capAnswerTimeToSecs,proto3" json:"cap_answer_time_to_secs,omitempty"`
+	ShowTimer                       bool                             `protobuf:"varint,25,opt,name=show_timer,json=showTimer,proto3" json:"show_timer,omitempty"`
+	StopTimerOnAnswer               bool                             `protobuf:"varint,38,opt,name=stop_timer_on_answer,json=stopTimerOnAnswer,proto3" json:"stop_timer_on_answer,omitempty"`
+	SecondsToShowQuestion           float32                          `protobuf:"fixed32,41,opt,name=seconds_to_show_question,json=secondsToShowQuestion,proto3" json:"seconds_to_show_question,omitempty"`
+	SecondsToShowAnswer             float32                          `protobuf:"fixed32,42,opt,name=seconds_to_show_answer,json=secondsToShowAnswer,proto3" json:"seconds_to_show_answer,omitempty"`
+	QuestionAction                  DeckConfig_QuestionAction        `protobuf:"varint,36,opt,name=question_action,json=questionAction,proto3,enum=pb.DeckConfig_QuestionAction" json:"question_action,omitempty"`
+	AnswerAction                    DeckConfig_AnswerAction          `protobuf:"varint,43,opt,name=answer_action,json=answerAction,proto3,enum=pb.DeckConfig_AnswerAction" json:"answer_action,omitempty"`
+	WaitForAudio                    bool                             `protobuf:"varint,44,opt,name=wait_for_audio,json=waitForAudio,proto3" json:"wait_for_audio,omitempty"`
+	SkipQuestionWhenReplayingAnswer bool                             `protobuf:"varint,26,opt,name=skip_question_when_replaying_answer,json=skipQuestionWhenReplayingAnswer,proto3" json:"skip_question_when_replaying_answer,omitempty"`
+	BuryNew                         bool                             `protobuf:"varint,27,opt,name=bury_new,json=buryNew,proto3" json:"bury_new,omitempty"`
+	BuryReviews                     bool                             `protobuf:"varint,28,opt,name=bury_reviews,json=buryReviews,proto3" json:"bury_reviews,omitempty"`
+	BuryInterdayLearning            bool                             `protobuf:"varint,29,opt,name=bury_interday_learning,json=buryInterdayLearning,proto3" json:"bury_interday_learning,omitempty"`
+	// for fsrs
+	DesiredRetention        float32   `protobuf:"fixed32,37,opt,name=desired_retention,json=desiredRetention,proto3" json:"desired_retention,omitempty"`
+	IgnoreRevlogsBeforeDate string    `protobuf:"bytes,46,opt,name=ignore_revlogs_before_date,json=ignoreRevlogsBeforeDate,proto3" json:"ignore_revlogs_before_date,omitempty"`
+	EasyDaysPercentages     []float32 `protobuf:"fixed32,4,rep,packed,name=easy_days_percentages,json=easyDaysPercentages,proto3" json:"easy_days_percentages,omitempty"`
+	HistoricalRetention     float32   `protobuf:"fixed32,40,opt,name=historical_retention,json=historicalRetention,proto3" json:"historical_retention,omitempty"`
+	ParamSearch             string    `protobuf:"bytes,45,opt,name=param_search,json=paramSearch,proto3" json:"param_search,omitempty"`
+	Other                   []byte    `protobuf:"bytes,255,opt,name=other,proto3" json:"other,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
+}
+
+func (x *DeckConfig) Reset() {
+	*x = DeckConfig{}
+	mi := &file_internal_pb_anki_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeckConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeckConfig) ProtoMessage() {}
+
+func (x *DeckConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_internal_pb_anki_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeckConfig.ProtoReflect.Descriptor instead.
+func (*DeckConfig) Descriptor() ([]byte, []int) {
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *DeckConfig) GetLearnSteps() []float32 {
+	if x != nil {
+		return x.LearnSteps
+	}
+	return nil
+}
+
+func (x *DeckConfig) GetRelearnSteps() []float32 {
+	if x != nil {
+		return x.RelearnSteps
+	}
+	return nil
+}
+
+func (x *DeckConfig) GetFsrsParams_4() []float32 {
+	if x != nil {
+		return x.FsrsParams_4
+	}
+	return nil
+}
+
+func (x *DeckConfig) GetFsrsParams_5() []float32 {
+	if x != nil {
+		return x.FsrsParams_5
+	}
+	return nil
+}
+
+func (x *DeckConfig) GetFsrsParams_6() []float32 {
+	if x != nil {
+		return x.FsrsParams_6
+	}
+	return nil
+}
+
+func (x *DeckConfig) GetNewPerDay() uint32 {
+	if x != nil {
+		return x.NewPerDay
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetReviewsPerDay() uint32 {
+	if x != nil {
+		return x.ReviewsPerDay
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetNewPerDayMinimum() uint32 {
+	if x != nil {
+		return x.NewPerDayMinimum
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetInitialEase() float32 {
+	if x != nil {
+		return x.InitialEase
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetEasyMultiplier() float32 {
+	if x != nil {
+		return x.EasyMultiplier
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetHardMultiplier() float32 {
+	if x != nil {
+		return x.HardMultiplier
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetLapseMultiplier() float32 {
+	if x != nil {
+		return x.LapseMultiplier
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetIntervalMultiplier() float32 {
+	if x != nil {
+		return x.IntervalMultiplier
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetMaximumReviewInterval() uint32 {
+	if x != nil {
+		return x.MaximumReviewInterval
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetMinimumLapseInterval() uint32 {
+	if x != nil {
+		return x.MinimumLapseInterval
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetGraduatingIntervalGood() uint32 {
+	if x != nil {
+		return x.GraduatingIntervalGood
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetGraduatingIntervalEasy() uint32 {
+	if x != nil {
+		return x.GraduatingIntervalEasy
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetNewCardInsertOrder() DeckConfig_NewCardInsertOrder {
+	if x != nil {
+		return x.NewCardInsertOrder
+	}
+	return DeckConfig_NEW_CARD_INSERT_ORDER_DUE
+}
+
+func (x *DeckConfig) GetNewCardGatherPriority() DeckConfig_NewCardGatherPriority {
+	if x != nil {
+		return x.NewCardGatherPriority
+	}
+	return DeckConfig_NEW_CARD_GATHER_PRIORITY_DECK
+}
+
+func (x *DeckConfig) GetNewCardSortOrder() DeckConfig_NewCardSortOrder {
+	if x != nil {
+		return x.NewCardSortOrder
+	}
+	return DeckConfig_NEW_CARD_SORT_ORDER_TEMPLATE
+}
+
+func (x *DeckConfig) GetNewMix() DeckConfig_ReviewMix {
+	if x != nil {
+		return x.NewMix
+	}
+	return DeckConfig_REVIEW_MIX_MIX_WITH_REVIEWS
+}
+
+func (x *DeckConfig) GetReviewOrder() DeckConfig_ReviewCardOrder {
+	if x != nil {
+		return x.ReviewOrder
+	}
+	return DeckConfig_REVIEW_CARD_ORDER_DAY
+}
+
+func (x *DeckConfig) GetInterdayLearningMix() DeckConfig_ReviewMix {
+	if x != nil {
+		return x.InterdayLearningMix
+	}
+	return DeckConfig_REVIEW_MIX_MIX_WITH_REVIEWS
+}
+
+func (x *DeckConfig) GetLeechAction() DeckConfig_LeechAction {
+	if x != nil {
+		return x.LeechAction
+	}
+	return DeckConfig_LEECH_ACTION_SUSPEND
+}
+
+func (x *DeckConfig) GetLeechThreshold() uint32 {
+	if x != nil {
+		return x.LeechThreshold
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetDisableAutoplay() bool {
+	if x != nil {
+		return x.DisableAutoplay
+	}
+	return false
+}
+
+func (x *DeckConfig) GetCapAnswerTimeToSecs() uint32 {
+	if x != nil {
+		return x.CapAnswerTimeToSecs
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetShowTimer() bool {
+	if x != nil {
+		return x.ShowTimer
+	}
+	return false
+}
+
+func (x *DeckConfig) GetStopTimerOnAnswer() bool {
+	if x != nil {
+		return x.StopTimerOnAnswer
+	}
+	return false
+}
+
+func (x *DeckConfig) GetSecondsToShowQuestion() float32 {
+	if x != nil {
+		return x.SecondsToShowQuestion
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetSecondsToShowAnswer() float32 {
+	if x != nil {
+		return x.SecondsToShowAnswer
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetQuestionAction() DeckConfig_QuestionAction {
+	if x != nil {
+		return x.QuestionAction
+	}
+	return DeckConfig_QUESTION_ACTION_SHOW_ANSWER
+}
+
+func (x *DeckConfig) GetAnswerAction() DeckConfig_AnswerAction {
+	if x != nil {
+		return x.AnswerAction
+	}
+	return DeckConfig_ANSWER_ACTION_BURY_CARD
+}
+
+func (x *DeckConfig) GetWaitForAudio() bool {
+	if x != nil {
+		return x.WaitForAudio
+	}
+	return false
+}
+
+func (x *DeckConfig) GetSkipQuestionWhenReplayingAnswer() bool {
+	if x != nil {
+		return x.SkipQuestionWhenReplayingAnswer
+	}
+	return false
+}
+
+func (x *DeckConfig) GetBuryNew() bool {
+	if x != nil {
+		return x.BuryNew
+	}
+	return false
+}
+
+func (x *DeckConfig) GetBuryReviews() bool {
+	if x != nil {
+		return x.BuryReviews
+	}
+	return false
+}
+
+func (x *DeckConfig) GetBuryInterdayLearning() bool {
+	if x != nil {
+		return x.BuryInterdayLearning
+	}
+	return false
+}
+
+func (x *DeckConfig) GetDesiredRetention() float32 {
+	if x != nil {
+		return x.DesiredRetention
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetIgnoreRevlogsBeforeDate() string {
+	if x != nil {
+		return x.IgnoreRevlogsBeforeDate
+	}
+	return ""
+}
+
+func (x *DeckConfig) GetEasyDaysPercentages() []float32 {
+	if x != nil {
+		return x.EasyDaysPercentages
+	}
+	return nil
+}
+
+func (x *DeckConfig) GetHistoricalRetention() float32 {
+	if x != nil {
+		return x.HistoricalRetention
+	}
+	return 0
+}
+
+func (x *DeckConfig) GetParamSearch() string {
+	if x != nil {
+		return x.ParamSearch
+	}
+	return ""
+}
+
+func (x *DeckConfig) GetOther() []byte {
+	if x != nil {
+		return x.Other
+	}
+	return nil
+}
+
 type PackageMetadata struct {
 	state         protoimpl.MessageState  `protogen:"open.v1"`
 	Version       PackageMetadata_Version `protobuf:"varint,1,opt,name=version,proto3,enum=pb.PackageMetadata_Version" json:"version,omitempty"`
@@ -638,7 +1476,7 @@ type PackageMetadata struct {
 
 func (x *PackageMetadata) Reset() {
 	*x = PackageMetadata{}
-	mi := &file_anki_proto_msgTypes[4]
+	mi := &file_internal_pb_anki_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -650,7 +1488,7 @@ func (x *PackageMetadata) String() string {
 func (*PackageMetadata) ProtoMessage() {}
 
 func (x *PackageMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_anki_proto_msgTypes[4]
+	mi := &file_internal_pb_anki_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -663,7 +1501,7 @@ func (x *PackageMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PackageMetadata.ProtoReflect.Descriptor instead.
 func (*PackageMetadata) Descriptor() ([]byte, []int) {
-	return file_anki_proto_rawDescGZIP(), []int{4}
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *PackageMetadata) GetVersion() PackageMetadata_Version {
@@ -682,7 +1520,7 @@ type MediaEntries struct {
 
 func (x *MediaEntries) Reset() {
 	*x = MediaEntries{}
-	mi := &file_anki_proto_msgTypes[5]
+	mi := &file_internal_pb_anki_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -694,7 +1532,7 @@ func (x *MediaEntries) String() string {
 func (*MediaEntries) ProtoMessage() {}
 
 func (x *MediaEntries) ProtoReflect() protoreflect.Message {
-	mi := &file_anki_proto_msgTypes[5]
+	mi := &file_internal_pb_anki_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -707,7 +1545,7 @@ func (x *MediaEntries) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MediaEntries.ProtoReflect.Descriptor instead.
 func (*MediaEntries) Descriptor() ([]byte, []int) {
-	return file_anki_proto_rawDescGZIP(), []int{5}
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *MediaEntries) GetEntries() []*MediaEntries_MediaEntry {
@@ -728,7 +1566,7 @@ type NotetypeConfig_CardRequirement struct {
 
 func (x *NotetypeConfig_CardRequirement) Reset() {
 	*x = NotetypeConfig_CardRequirement{}
-	mi := &file_anki_proto_msgTypes[6]
+	mi := &file_internal_pb_anki_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -740,7 +1578,7 @@ func (x *NotetypeConfig_CardRequirement) String() string {
 func (*NotetypeConfig_CardRequirement) ProtoMessage() {}
 
 func (x *NotetypeConfig_CardRequirement) ProtoReflect() protoreflect.Message {
-	mi := &file_anki_proto_msgTypes[6]
+	mi := &file_internal_pb_anki_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -753,7 +1591,7 @@ func (x *NotetypeConfig_CardRequirement) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NotetypeConfig_CardRequirement.ProtoReflect.Descriptor instead.
 func (*NotetypeConfig_CardRequirement) Descriptor() ([]byte, []int) {
-	return file_anki_proto_rawDescGZIP(), []int{1, 0}
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{1, 0}
 }
 
 func (x *NotetypeConfig_CardRequirement) GetCardOrd() uint32 {
@@ -789,7 +1627,7 @@ type MediaEntries_MediaEntry struct {
 
 func (x *MediaEntries_MediaEntry) Reset() {
 	*x = MediaEntries_MediaEntry{}
-	mi := &file_anki_proto_msgTypes[7]
+	mi := &file_internal_pb_anki_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -801,7 +1639,7 @@ func (x *MediaEntries_MediaEntry) String() string {
 func (*MediaEntries_MediaEntry) ProtoMessage() {}
 
 func (x *MediaEntries_MediaEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_anki_proto_msgTypes[7]
+	mi := &file_internal_pb_anki_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -814,7 +1652,7 @@ func (x *MediaEntries_MediaEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MediaEntries_MediaEntry.ProtoReflect.Descriptor instead.
 func (*MediaEntries_MediaEntry) Descriptor() ([]byte, []int) {
-	return file_anki_proto_rawDescGZIP(), []int{5, 0}
+	return file_internal_pb_anki_proto_rawDescGZIP(), []int{6, 0}
 }
 
 func (x *MediaEntries_MediaEntry) GetName() string {
@@ -845,12 +1683,11 @@ func (x *MediaEntries_MediaEntry) GetLegacyZipFilename() uint32 {
 	return 0
 }
 
-var File_anki_proto protoreflect.FileDescriptor
+var File_internal_pb_anki_proto protoreflect.FileDescriptor
 
-const file_anki_proto_rawDesc = "" +
+const file_internal_pb_anki_proto_rawDesc = "" +
 	"\n" +
-	"\n" +
-	"anki.proto\x12\x02pb\"\xb0\x02\n" +
+	"\x16internal/pb/anki.proto\x12\x02pb\"\xb0\x02\n" +
 	"\rStockNotetype\"\x9e\x02\n" +
 	"\x11OriginalStockKind\x12\x1f\n" +
 	"\x1bORIGINAL_STOCK_KIND_UNKNOWN\x10\x00\x12\x1d\n" +
@@ -916,7 +1753,102 @@ const file_anki_proto_rawDesc = "" +
 	"\x11browser_font_size\x18\a \x01(\rR\x0fbrowserFontSize\x12\x13\n" +
 	"\x02id\x18\b \x01(\x03H\x00R\x02id\x88\x01\x01\x12\x15\n" +
 	"\x05other\x18\xff\x01 \x01(\fR\x05otherB\x05\n" +
-	"\x03_id\"\xa8\x01\n" +
+	"\x03_id\"\xab\x1d\n" +
+	"\n" +
+	"DeckConfig\x12\x1f\n" +
+	"\vlearn_steps\x18\x01 \x03(\x02R\n" +
+	"learnSteps\x12#\n" +
+	"\rrelearn_steps\x18\x02 \x03(\x02R\frelearnSteps\x12\"\n" +
+	"\rfsrs_params_4\x18\x03 \x03(\x02R\vfsrsParams4\x12\"\n" +
+	"\rfsrs_params_5\x18\x05 \x03(\x02R\vfsrsParams5\x12\"\n" +
+	"\rfsrs_params_6\x18\x06 \x03(\x02R\vfsrsParams6\x12\x1e\n" +
+	"\vnew_per_day\x18\t \x01(\rR\tnewPerDay\x12&\n" +
+	"\x0freviews_per_day\x18\n" +
+	" \x01(\rR\rreviewsPerDay\x12-\n" +
+	"\x13new_per_day_minimum\x18# \x01(\rR\x10newPerDayMinimum\x12!\n" +
+	"\finitial_ease\x18\v \x01(\x02R\vinitialEase\x12'\n" +
+	"\x0feasy_multiplier\x18\f \x01(\x02R\x0eeasyMultiplier\x12'\n" +
+	"\x0fhard_multiplier\x18\r \x01(\x02R\x0ehardMultiplier\x12)\n" +
+	"\x10lapse_multiplier\x18\x0e \x01(\x02R\x0flapseMultiplier\x12/\n" +
+	"\x13interval_multiplier\x18\x0f \x01(\x02R\x12intervalMultiplier\x126\n" +
+	"\x17maximum_review_interval\x18\x10 \x01(\rR\x15maximumReviewInterval\x124\n" +
+	"\x16minimum_lapse_interval\x18\x11 \x01(\rR\x14minimumLapseInterval\x128\n" +
+	"\x18graduating_interval_good\x18\x12 \x01(\rR\x16graduatingIntervalGood\x128\n" +
+	"\x18graduating_interval_easy\x18\x13 \x01(\rR\x16graduatingIntervalEasy\x12T\n" +
+	"\x15new_card_insert_order\x18\x14 \x01(\x0e2!.pb.DeckConfig.NewCardInsertOrderR\x12newCardInsertOrder\x12]\n" +
+	"\x18new_card_gather_priority\x18\" \x01(\x0e2$.pb.DeckConfig.NewCardGatherPriorityR\x15newCardGatherPriority\x12N\n" +
+	"\x13new_card_sort_order\x18  \x01(\x0e2\x1f.pb.DeckConfig.NewCardSortOrderR\x10newCardSortOrder\x121\n" +
+	"\anew_mix\x18\x1e \x01(\x0e2\x18.pb.DeckConfig.ReviewMixR\x06newMix\x12A\n" +
+	"\freview_order\x18! \x01(\x0e2\x1e.pb.DeckConfig.ReviewCardOrderR\vreviewOrder\x12L\n" +
+	"\x15interday_learning_mix\x18\x1f \x01(\x0e2\x18.pb.DeckConfig.ReviewMixR\x13interdayLearningMix\x12=\n" +
+	"\fleech_action\x18\x15 \x01(\x0e2\x1a.pb.DeckConfig.LeechActionR\vleechAction\x12'\n" +
+	"\x0fleech_threshold\x18\x16 \x01(\rR\x0eleechThreshold\x12)\n" +
+	"\x10disable_autoplay\x18\x17 \x01(\bR\x0fdisableAutoplay\x124\n" +
+	"\x17cap_answer_time_to_secs\x18\x18 \x01(\rR\x13capAnswerTimeToSecs\x12\x1d\n" +
+	"\n" +
+	"show_timer\x18\x19 \x01(\bR\tshowTimer\x12/\n" +
+	"\x14stop_timer_on_answer\x18& \x01(\bR\x11stopTimerOnAnswer\x127\n" +
+	"\x18seconds_to_show_question\x18) \x01(\x02R\x15secondsToShowQuestion\x123\n" +
+	"\x16seconds_to_show_answer\x18* \x01(\x02R\x13secondsToShowAnswer\x12F\n" +
+	"\x0fquestion_action\x18$ \x01(\x0e2\x1d.pb.DeckConfig.QuestionActionR\x0equestionAction\x12@\n" +
+	"\ranswer_action\x18+ \x01(\x0e2\x1b.pb.DeckConfig.AnswerActionR\fanswerAction\x12$\n" +
+	"\x0ewait_for_audio\x18, \x01(\bR\fwaitForAudio\x12L\n" +
+	"#skip_question_when_replaying_answer\x18\x1a \x01(\bR\x1fskipQuestionWhenReplayingAnswer\x12\x19\n" +
+	"\bbury_new\x18\x1b \x01(\bR\aburyNew\x12!\n" +
+	"\fbury_reviews\x18\x1c \x01(\bR\vburyReviews\x124\n" +
+	"\x16bury_interday_learning\x18\x1d \x01(\bR\x14buryInterdayLearning\x12+\n" +
+	"\x11desired_retention\x18% \x01(\x02R\x10desiredRetention\x12;\n" +
+	"\x1aignore_revlogs_before_date\x18. \x01(\tR\x17ignoreRevlogsBeforeDate\x122\n" +
+	"\x15easy_days_percentages\x18\x04 \x03(\x02R\x13easyDaysPercentages\x121\n" +
+	"\x14historical_retention\x18( \x01(\x02R\x13historicalRetention\x12!\n" +
+	"\fparam_search\x18- \x01(\tR\vparamSearch\x12\x15\n" +
+	"\x05other\x18\xff\x01 \x01(\fR\x05other\"U\n" +
+	"\x12NewCardInsertOrder\x12\x1d\n" +
+	"\x19NEW_CARD_INSERT_ORDER_DUE\x10\x00\x12 \n" +
+	"\x1cNEW_CARD_INSERT_ORDER_RANDOM\x10\x01\"\xa2\x02\n" +
+	"\x15NewCardGatherPriority\x12!\n" +
+	"\x1dNEW_CARD_GATHER_PRIORITY_DECK\x10\x00\x123\n" +
+	"/NEW_CARD_GATHER_PRIORITY_DECK_THEN_RANDOM_NOTES\x10\x05\x12,\n" +
+	"(NEW_CARD_GATHER_PRIORITY_LOWEST_POSITION\x10\x01\x12-\n" +
+	")NEW_CARD_GATHER_PRIORITY_HIGHEST_POSITION\x10\x02\x12)\n" +
+	"%NEW_CARD_GATHER_PRIORITY_RANDOM_NOTES\x10\x03\x12)\n" +
+	"%NEW_CARD_GATHER_PRIORITY_RANDOM_CARDS\x10\x04\"\xdb\x01\n" +
+	"\x10NewCardSortOrder\x12 \n" +
+	"\x1cNEW_CARD_SORT_ORDER_TEMPLATE\x10\x00\x12\x1f\n" +
+	"\x1bNEW_CARD_SORT_ORDER_NO_SORT\x10\x01\x12,\n" +
+	"(NEW_CARD_SORT_ORDER_TEMPLATE_THEN_RANDOM\x10\x02\x121\n" +
+	"-NEW_CARD_SORT_ORDER_RANDOM_NOTE_THEN_TEMPLATE\x10\x03\x12#\n" +
+	"\x1fNEW_CARD_SORT_ORDER_RANDOM_CARD\x10\x04\"\xdb\x03\n" +
+	"\x0fReviewCardOrder\x12\x19\n" +
+	"\x15REVIEW_CARD_ORDER_DAY\x10\x00\x12#\n" +
+	"\x1fREVIEW_CARD_ORDER_DAY_THEN_DECK\x10\x01\x12#\n" +
+	"\x1fREVIEW_CARD_ORDER_DECK_THEN_DAY\x10\x02\x12)\n" +
+	"%REVIEW_CARD_ORDER_INTERVALS_ASCENDING\x10\x03\x12*\n" +
+	"&REVIEW_CARD_ORDER_INTERVALS_DESCENDING\x10\x04\x12$\n" +
+	" REVIEW_CARD_ORDER_EASE_ASCENDING\x10\x05\x12%\n" +
+	"!REVIEW_CARD_ORDER_EASE_DESCENDING\x10\x06\x12.\n" +
+	"*REVIEW_CARD_ORDER_RETRIEVABILITY_ASCENDING\x10\a\x12/\n" +
+	"+REVIEW_CARD_ORDER_RETRIEVABILITY_DESCENDING\x10\v\x12\x1c\n" +
+	"\x18REVIEW_CARD_ORDER_RANDOM\x10\b\x12\x1b\n" +
+	"\x17REVIEW_CARD_ORDER_ADDED\x10\t\x12#\n" +
+	"\x1fREVIEW_CARD_ORDER_REVERSE_ADDED\x10\n" +
+	"\"i\n" +
+	"\tReviewMix\x12\x1f\n" +
+	"\x1bREVIEW_MIX_MIX_WITH_REVIEWS\x10\x00\x12\x1c\n" +
+	"\x18REVIEW_MIX_AFTER_REVIEWS\x10\x01\x12\x1d\n" +
+	"\x19REVIEW_MIX_BEFORE_REVIEWS\x10\x02\"B\n" +
+	"\vLeechAction\x12\x18\n" +
+	"\x14LEECH_ACTION_SUSPEND\x10\x00\x12\x19\n" +
+	"\x15LEECH_ACTION_TAG_ONLY\x10\x01\"\xaa\x01\n" +
+	"\fAnswerAction\x12\x1b\n" +
+	"\x17ANSWER_ACTION_BURY_CARD\x10\x00\x12\x1e\n" +
+	"\x1aANSWER_ACTION_ANSWER_AGAIN\x10\x01\x12\x1d\n" +
+	"\x19ANSWER_ACTION_ANSWER_GOOD\x10\x02\x12\x1d\n" +
+	"\x19ANSWER_ACTION_ANSWER_HARD\x10\x03\x12\x1f\n" +
+	"\x1bANSWER_ACTION_SHOW_REMINDER\x10\x04\"T\n" +
+	"\x0eQuestionAction\x12\x1f\n" +
+	"\x1bQUESTION_ACTION_SHOW_ANSWER\x10\x00\x12!\n" +
+	"\x1dQUESTION_ACTION_SHOW_REMINDER\x10\x01J\x04\b\a\x10\tJ\x04\b'\x10(\"\xa8\x01\n" +
 	"\x0fPackageMetadata\x125\n" +
 	"\aversion\x18\x01 \x01(\x0e2\x1b.pb.PackageMetadata.VersionR\aversion\"^\n" +
 	"\aVersion\x12\x13\n" +
@@ -935,72 +1867,90 @@ const file_anki_proto_rawDesc = "" +
 	"\x14_legacy_zip_filenameB\"Z github.com/lftk/anki/internal/pbb\x06proto3"
 
 var (
-	file_anki_proto_rawDescOnce sync.Once
-	file_anki_proto_rawDescData []byte
+	file_internal_pb_anki_proto_rawDescOnce sync.Once
+	file_internal_pb_anki_proto_rawDescData []byte
 )
 
-func file_anki_proto_rawDescGZIP() []byte {
-	file_anki_proto_rawDescOnce.Do(func() {
-		file_anki_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_anki_proto_rawDesc), len(file_anki_proto_rawDesc)))
+func file_internal_pb_anki_proto_rawDescGZIP() []byte {
+	file_internal_pb_anki_proto_rawDescOnce.Do(func() {
+		file_internal_pb_anki_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_internal_pb_anki_proto_rawDesc), len(file_internal_pb_anki_proto_rawDesc)))
 	})
-	return file_anki_proto_rawDescData
+	return file_internal_pb_anki_proto_rawDescData
 }
 
-var file_anki_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_anki_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
-var file_anki_proto_goTypes = []any{
+var file_internal_pb_anki_proto_enumTypes = make([]protoimpl.EnumInfo, 12)
+var file_internal_pb_anki_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_internal_pb_anki_proto_goTypes = []any{
 	(StockNotetype_OriginalStockKind)(0),     // 0: pb.StockNotetype.OriginalStockKind
 	(NotetypeConfig_Kind)(0),                 // 1: pb.NotetypeConfig.Kind
 	(NotetypeConfig_CardRequirement_Kind)(0), // 2: pb.NotetypeConfig.CardRequirement.Kind
-	(PackageMetadata_Version)(0),             // 3: pb.PackageMetadata.Version
-	(*StockNotetype)(nil),                    // 4: pb.StockNotetype
-	(*NotetypeConfig)(nil),                   // 5: pb.NotetypeConfig
-	(*FieldConfig)(nil),                      // 6: pb.FieldConfig
-	(*TemplateConfig)(nil),                   // 7: pb.TemplateConfig
-	(*PackageMetadata)(nil),                  // 8: pb.PackageMetadata
-	(*MediaEntries)(nil),                     // 9: pb.MediaEntries
-	(*NotetypeConfig_CardRequirement)(nil),   // 10: pb.NotetypeConfig.CardRequirement
-	(*MediaEntries_MediaEntry)(nil),          // 11: pb.MediaEntries.MediaEntry
+	(DeckConfig_NewCardInsertOrder)(0),       // 3: pb.DeckConfig.NewCardInsertOrder
+	(DeckConfig_NewCardGatherPriority)(0),    // 4: pb.DeckConfig.NewCardGatherPriority
+	(DeckConfig_NewCardSortOrder)(0),         // 5: pb.DeckConfig.NewCardSortOrder
+	(DeckConfig_ReviewCardOrder)(0),          // 6: pb.DeckConfig.ReviewCardOrder
+	(DeckConfig_ReviewMix)(0),                // 7: pb.DeckConfig.ReviewMix
+	(DeckConfig_LeechAction)(0),              // 8: pb.DeckConfig.LeechAction
+	(DeckConfig_AnswerAction)(0),             // 9: pb.DeckConfig.AnswerAction
+	(DeckConfig_QuestionAction)(0),           // 10: pb.DeckConfig.QuestionAction
+	(PackageMetadata_Version)(0),             // 11: pb.PackageMetadata.Version
+	(*StockNotetype)(nil),                    // 12: pb.StockNotetype
+	(*NotetypeConfig)(nil),                   // 13: pb.NotetypeConfig
+	(*FieldConfig)(nil),                      // 14: pb.FieldConfig
+	(*TemplateConfig)(nil),                   // 15: pb.TemplateConfig
+	(*DeckConfig)(nil),                       // 16: pb.DeckConfig
+	(*PackageMetadata)(nil),                  // 17: pb.PackageMetadata
+	(*MediaEntries)(nil),                     // 18: pb.MediaEntries
+	(*NotetypeConfig_CardRequirement)(nil),   // 19: pb.NotetypeConfig.CardRequirement
+	(*MediaEntries_MediaEntry)(nil),          // 20: pb.MediaEntries.MediaEntry
 }
-var file_anki_proto_depIdxs = []int32{
+var file_internal_pb_anki_proto_depIdxs = []int32{
 	1,  // 0: pb.NotetypeConfig.kind:type_name -> pb.NotetypeConfig.Kind
-	10, // 1: pb.NotetypeConfig.reqs:type_name -> pb.NotetypeConfig.CardRequirement
+	19, // 1: pb.NotetypeConfig.reqs:type_name -> pb.NotetypeConfig.CardRequirement
 	0,  // 2: pb.NotetypeConfig.original_stock_kind:type_name -> pb.StockNotetype.OriginalStockKind
-	3,  // 3: pb.PackageMetadata.version:type_name -> pb.PackageMetadata.Version
-	11, // 4: pb.MediaEntries.entries:type_name -> pb.MediaEntries.MediaEntry
-	2,  // 5: pb.NotetypeConfig.CardRequirement.kind:type_name -> pb.NotetypeConfig.CardRequirement.Kind
-	6,  // [6:6] is the sub-list for method output_type
-	6,  // [6:6] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	3,  // 3: pb.DeckConfig.new_card_insert_order:type_name -> pb.DeckConfig.NewCardInsertOrder
+	4,  // 4: pb.DeckConfig.new_card_gather_priority:type_name -> pb.DeckConfig.NewCardGatherPriority
+	5,  // 5: pb.DeckConfig.new_card_sort_order:type_name -> pb.DeckConfig.NewCardSortOrder
+	7,  // 6: pb.DeckConfig.new_mix:type_name -> pb.DeckConfig.ReviewMix
+	6,  // 7: pb.DeckConfig.review_order:type_name -> pb.DeckConfig.ReviewCardOrder
+	7,  // 8: pb.DeckConfig.interday_learning_mix:type_name -> pb.DeckConfig.ReviewMix
+	8,  // 9: pb.DeckConfig.leech_action:type_name -> pb.DeckConfig.LeechAction
+	10, // 10: pb.DeckConfig.question_action:type_name -> pb.DeckConfig.QuestionAction
+	9,  // 11: pb.DeckConfig.answer_action:type_name -> pb.DeckConfig.AnswerAction
+	11, // 12: pb.PackageMetadata.version:type_name -> pb.PackageMetadata.Version
+	20, // 13: pb.MediaEntries.entries:type_name -> pb.MediaEntries.MediaEntry
+	2,  // 14: pb.NotetypeConfig.CardRequirement.kind:type_name -> pb.NotetypeConfig.CardRequirement.Kind
+	15, // [15:15] is the sub-list for method output_type
+	15, // [15:15] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
-func init() { file_anki_proto_init() }
-func file_anki_proto_init() {
-	if File_anki_proto != nil {
+func init() { file_internal_pb_anki_proto_init() }
+func file_internal_pb_anki_proto_init() {
+	if File_internal_pb_anki_proto != nil {
 		return
 	}
-	file_anki_proto_msgTypes[1].OneofWrappers = []any{}
-	file_anki_proto_msgTypes[2].OneofWrappers = []any{}
-	file_anki_proto_msgTypes[3].OneofWrappers = []any{}
-	file_anki_proto_msgTypes[7].OneofWrappers = []any{}
+	file_internal_pb_anki_proto_msgTypes[1].OneofWrappers = []any{}
+	file_internal_pb_anki_proto_msgTypes[2].OneofWrappers = []any{}
+	file_internal_pb_anki_proto_msgTypes[3].OneofWrappers = []any{}
+	file_internal_pb_anki_proto_msgTypes[8].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_anki_proto_rawDesc), len(file_anki_proto_rawDesc)),
-			NumEnums:      4,
-			NumMessages:   8,
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_internal_pb_anki_proto_rawDesc), len(file_internal_pb_anki_proto_rawDesc)),
+			NumEnums:      12,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_anki_proto_goTypes,
-		DependencyIndexes: file_anki_proto_depIdxs,
-		EnumInfos:         file_anki_proto_enumTypes,
-		MessageInfos:      file_anki_proto_msgTypes,
+		GoTypes:           file_internal_pb_anki_proto_goTypes,
+		DependencyIndexes: file_internal_pb_anki_proto_depIdxs,
+		EnumInfos:         file_internal_pb_anki_proto_enumTypes,
+		MessageInfos:      file_internal_pb_anki_proto_msgTypes,
 	}.Build()
-	File_anki_proto = out.File
-	file_anki_proto_goTypes = nil
-	file_anki_proto_depIdxs = nil
+	File_internal_pb_anki_proto = out.File
+	file_internal_pb_anki_proto_goTypes = nil
+	file_internal_pb_anki_proto_depIdxs = nil
 }

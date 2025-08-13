@@ -3,6 +3,10 @@ package anki
 import (
 	"iter"
 	"time"
+
+	"google.golang.org/protobuf/proto"
+
+	"github.com/lftk/anki/internal/pb"
 )
 
 type DeckConfig struct {
@@ -10,41 +14,50 @@ type DeckConfig struct {
 	Name     string
 	Modified time.Time
 	USN      int
-	Config   []byte
+	Config   *pb.DeckConfig
+}
+
+func (c *Collection) SetDeckConfig(config *DeckConfig) error {
+	const query = `
+INSERT
+  OR REPLACE INTO deck_config (id, name, usn, mtime_secs, config)
+VALUES (?, ?, ?, ?, ?)	
+`
+
+	inner, err := proto.Marshal(config.Config)
+	if err != nil {
+		return err
+	}
+	return sqlExecute(c.db, query, config.ID, config.Name, config.USN, config.Modified.Unix(), inner)
 }
 
 func (c *Collection) GetDeckConfig(id int64) (*DeckConfig, error) {
-	config := &DeckConfig{}
-	var modSecs int64
-	err := c.db.QueryRow("SELECT id, name, mtime_secs, usn, config FROM deck_config WHERE id = ?", id).Scan(
-		&config.ID, &config.Name, &modSecs, &config.USN, &config.Config)
-	if err != nil {
-		return nil, err
-	}
-	config.Modified = time.Unix(modSecs, 0)
-	return config, err
+	const query = `SELECT id, name, mtime_secs, usn, config FROM deck_config WHERE id = ?`
+
+	return sqlGet(c.db, scanDeckConfig, query, id)
+}
+
+func (c *Collection) DeleteDeckConfig(id int64) error {
+	return sqlExecute(c.db, "DELETE FROM deck_config WHERE id = ?", id)
 }
 
 func (c *Collection) ListDeckConfigs() iter.Seq2[*DeckConfig, error] {
-	return func(yield func(*DeckConfig, error) bool) {
-		rows, err := c.db.Query("SELECT id, name, mtime_secs, usn, config FROM deck_config")
-		if err != nil {
-			yield(nil, err)
-			return
-		}
-		defer rows.Close()
+	const query = `SELECT id, name, mtime_secs, usn, config FROM deck_config`
 
-		for rows.Next() {
-			config := &DeckConfig{}
-			var modSecs int64
-			if err := rows.Scan(&config.ID, &config.Name, &modSecs, &config.USN, &config.Config); err != nil {
-				yield(nil, err)
-				return
-			}
-			config.Modified = time.Unix(modSecs, 0)
-			if !yield(config, nil) {
-				return
-			}
-		}
+	return sqlSelectSeq(c.db, scanDeckConfig, query)
+}
+
+func scanDeckConfig(_ sqlQueryer, row sqlRow) (*DeckConfig, error) {
+	var c DeckConfig
+	var mod int64
+	var config []byte
+	if err := row.Scan(&c.ID, &c.Name, &mod, &c.USN, &config); err != nil {
+		return nil, err
 	}
+	c.Modified = time.Unix(mod, 0)
+	c.Config = new(pb.DeckConfig)
+	if err := proto.Unmarshal(config, c.Config); err != nil {
+		return nil, err
+	}
+	return &c, nil
 }
