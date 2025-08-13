@@ -76,6 +76,11 @@ func sqlSelectSeq[T any](q sqlQueryer, fn func(sqlQueryer, sqlRow) (T, error), q
 	}
 }
 
+func scanValue[T any](_ sqlQueryer, row sqlRow) (T, error) {
+	var val T
+	return val, row.Scan(&val)
+}
+
 type sqlExecer interface {
 	Exec(query string, args ...any) (sql.Result, error)
 }

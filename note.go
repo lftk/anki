@@ -60,15 +60,7 @@ func (c *Collection) DeleteNote(id int64) error {
 func deleteNotes(e sqlExt, notetypeID int64) error {
 	const query = `SELECT id FROM notes WHERE mid = ?`
 
-	fn := func(_ sqlQueryer, row sqlRow) (int64, error) {
-		var id int64
-		if err := row.Scan(&id); err != nil {
-			return 0, err
-		}
-		return id, nil
-	}
-
-	for id, err := range sqlSelectSeq(e, fn, query, notetypeID) {
+	for id, err := range sqlSelectSeq(e, scanValue[int64], query, notetypeID) {
 		if err != nil {
 			return err
 		}
