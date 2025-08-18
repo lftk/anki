@@ -17,7 +17,11 @@ func (c *Collection) GetMedia(name string) (Media, error) {
 }
 
 func (c *Collection) OpenMedia(name string) (io.ReadCloser, error) {
-	return os.Open(c.mediaPath(name))
+	m, err := c.GetMedia(name)
+	if err != nil {
+		return nil, err
+	}
+	return m.Open()
 }
 
 func (c *Collection) AddMedia(name, path string) error {
@@ -53,7 +57,6 @@ func (c *Collection) CopyMedia(media Media) error {
 }
 
 func (c *Collection) CreateMedia(name string) (io.WriteCloser, error) {
-	// TODO: create media dir
 	path := c.mediaPath(name)
 	f, err := os.Create(path)
 	if err != nil {
@@ -89,7 +92,7 @@ func (c *Collection) DeleteMedia(name string) error {
 }
 
 func (c *Collection) ListMedia() iter.Seq2[Media, error] {
-	dir := mediaDir(c.dir)
+	dir := c.mediaDir()
 	return func(yield func(Media, error) bool) {
 		fn := func(path string, d fs.DirEntry, err error) error {
 			if err != nil || d.IsDir() {
@@ -104,7 +107,6 @@ func (c *Collection) ListMedia() iter.Seq2[Media, error] {
 			if !yield(&media{name: name, path: path}, nil) {
 				return filepath.SkipAll
 			}
-
 			return nil
 		}
 		if err := filepath.WalkDir(dir, fn); err != nil {
@@ -113,8 +115,12 @@ func (c *Collection) ListMedia() iter.Seq2[Media, error] {
 	}
 }
 
+func (c *Collection) mediaDir() string {
+	return mediaDir(c.dir)
+}
+
 func (c *Collection) mediaPath(name string) string {
-	return filepath.Join(mediaDir(c.dir), name)
+	return filepath.Join(c.mediaDir(), name)
 }
 
 type Media interface {

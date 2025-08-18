@@ -13,9 +13,9 @@ import (
 var ddl string
 
 type Collection struct {
-	db     *sql.DB
-	dir    string
-	isTemp bool
+	db        *sql.DB
+	dir       string
+	isTempDir bool
 
 	mod time.Time
 	scm time.Time
@@ -23,13 +23,17 @@ type Collection struct {
 	ls  time.Time
 }
 
-func newCollection(db *sql.DB, dir string, isTemp bool) (*Collection, error) {
+func newCollection(db *sql.DB, dir string, isTempDir bool) (*Collection, error) {
 	col := &Collection{
-		db:     db,
-		dir:    dir,
-		isTemp: isTemp,
+		db:        db,
+		dir:       dir,
+		isTempDir: isTempDir,
 	}
 	if err := col.load(); err != nil {
+		_ = col.Close()
+		return nil, err
+	}
+	if err := os.MkdirAll(col.mediaDir(), 0755); err != nil {
 		_ = col.Close()
 		return nil, err
 	}
@@ -168,7 +172,7 @@ func (c *Collection) DumpTo(dir string) error {
 
 func (c *Collection) Close() error {
 	defer func() {
-		if c.isTemp {
+		if c.isTempDir {
 			_ = os.RemoveAll(c.dir)
 		}
 	}()
