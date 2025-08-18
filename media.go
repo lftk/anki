@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 )
 
-func (c *Collection) GetMedia(name string) (MediaFile, error) {
+func (c *Collection) GetMedia(name string) (Media, error) {
 	path := c.mediaPath(name)
 	if _, err := os.Stat(path); err != nil {
 		return nil, err
 	}
-	return &mediaFile{name: name, path: path}, nil
+	return &media{name: name, path: path}, nil
 }
 
 func (c *Collection) OpenMedia(name string) (io.ReadCloser, error) {
@@ -21,7 +21,7 @@ func (c *Collection) OpenMedia(name string) (io.ReadCloser, error) {
 }
 
 func (c *Collection) AddMedia(name, path string) error {
-	return c.CopyMedia(&mediaFile{name: name, path: path})
+	return c.CopyMedia(&media{name: name, path: path})
 }
 
 func (c *Collection) WriteMedia(name string, content []byte) error {
@@ -35,7 +35,7 @@ func (c *Collection) WriteMedia(name string, content []byte) error {
 	return err
 }
 
-func (c *Collection) CopyMedia(media MediaFile) error {
+func (c *Collection) CopyMedia(media Media) error {
 	r, err := media.Open()
 	if err != nil {
 		return err
@@ -88,21 +88,20 @@ func (c *Collection) DeleteMedia(name string) error {
 	return os.Remove(c.mediaPath(name))
 }
 
-func (c *Collection) ListMedia() iter.Seq2[MediaFile, error] {
+func (c *Collection) ListMedia() iter.Seq2[Media, error] {
 	dir := mediaDir(c.dir)
-	return func(yield func(MediaFile, error) bool) {
+	return func(yield func(Media, error) bool) {
 		fn := func(path string, d fs.DirEntry, err error) error {
 			if err != nil || d.IsDir() {
 				return err
 			}
 
-			rel, err := filepath.Rel(dir, path)
+			name, err := filepath.Rel(dir, path)
 			if err != nil {
 				return err
 			}
 
-			media := &mediaFile{name: rel, path: path}
-			if !yield(media, nil) {
+			if !yield(&media{name: name, path: path}, nil) {
 				return filepath.SkipAll
 			}
 
@@ -118,20 +117,20 @@ func (c *Collection) mediaPath(name string) string {
 	return filepath.Join(mediaDir(c.dir), name)
 }
 
-type MediaFile interface {
+type Media interface {
 	Name() string
 	Open() (io.ReadCloser, error)
 }
 
-type mediaFile struct {
+type media struct {
 	name string
 	path string
 }
 
-func (mf *mediaFile) Name() string {
-	return mf.name
+func (m *media) Name() string {
+	return m.name
 }
 
-func (mf *mediaFile) Open() (io.ReadCloser, error) {
-	return os.Open(mf.path)
+func (m *media) Open() (io.ReadCloser, error) {
+	return os.Open(m.path)
 }
