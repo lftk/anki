@@ -9,9 +9,6 @@ import (
 	"time"
 )
 
-//go:embed schema.sql
-var ddl string
-
 type Collection struct {
 	db        *sql.DB
 	dir       string
@@ -68,53 +65,54 @@ func inTempDir(fn func(dir string) (*Collection, error)) (*Collection, error) {
 	return col, nil
 }
 
+//go:embed schema.sql
+var ddl string
+
 func Create() (*Collection, error) {
 	return inTempDir(func(dir string) (*Collection, error) {
-		return create(dir, true)
+		db, err := sqlite3Open(databasePath(dir) + "?_journal=WAL&mode=rwc")
+		if err != nil {
+			return nil, err
+		}
+
+		if err := sqlExecute(db, ddl); err != nil {
+			_ = db.Close()
+			return nil, err
+		}
+
+		return newCollection(db, dir, true)
 	})
 }
 
 func Open(col string) (*Collection, error) {
 	return inTempDir(func(dir string) (*Collection, error) {
-		return open(col, dir, true)
+		r, err := zip.OpenReader(col)
+		if err != nil {
+			return nil, err
+		}
+		defer r.Close()
+
+		if err = Unpack(&r.Reader, dir); err != nil {
+			return nil, err
+		}
+
+		return loadDir(dir, true)
 	})
 }
 
 func ReadFrom(r io.ReaderAt, size int64) (*Collection, error) {
 	return inTempDir(func(dir string) (*Collection, error) {
-		return readFrom(r, size, dir, true)
+		zr, err := zip.NewReader(r, size)
+		if err != nil {
+			return nil, err
+		}
+
+		if err = Unpack(zr, dir); err != nil {
+			return nil, err
+		}
+
+		return loadDir(dir, true)
 	})
-}
-
-func create(dir string, isTempDir bool) (*Collection, error) {
-	panic("not implemented")
-}
-
-func open(col, dir string, isTempDir bool) (*Collection, error) {
-	r, err := zip.OpenReader(col)
-	if err != nil {
-		return nil, err
-	}
-	defer r.Close()
-
-	if err = Unpack(&r.Reader, dir); err != nil {
-		return nil, err
-	}
-
-	return loadDir(dir, isTempDir)
-}
-
-func readFrom(r io.ReaderAt, size int64, dir string, isTempDir bool) (*Collection, error) {
-	zr, err := zip.NewReader(r, size)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = Unpack(zr, dir); err != nil {
-		return nil, err
-	}
-
-	return loadDir(dir, isTempDir)
 }
 
 func LoadDir(dir string) (*Collection, error) {
@@ -197,24 +195,4 @@ func (c *Collection) SchemdModTime() time.Time {
 
 func (c *Collection) LastSyncTime() time.Time {
 	return c.ls
-}
-
-type builder struct {
-	dir string
-}
-
-func WorkDir(dir string) *builder {
-	return &builder{dir: dir}
-}
-
-func (b *builder) Create() (*Collection, error) {
-	return create(b.dir, false)
-}
-
-func (b *builder) Open(col string) (*Collection, error) {
-	return open(col, b.dir, false)
-}
-
-func (b *builder) ReadFrom(r io.ReaderAt, size int64) (*Collection, error) {
-	return readFrom(r, size, b.dir, false)
 }
