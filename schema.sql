@@ -8,6 +8,7 @@ CREATE TABLE col (
   usn integer NOT NULL,
   ls integer NOT NULL,
   conf text NOT NULL,
+  models text NOT NULL,
   decks text NOT NULL,
   dconf text NOT NULL,
   tags text NOT NULL
@@ -122,4 +123,22 @@ CREATE INDEX ix_cards_sched ON cards (did, queue, due);
 CREATE INDEX ix_revlog_cid ON revlog (cid);
 -- field uniqueness
 CREATE INDEX ix_notes_csum ON notes (csum);
-INSERT INTO col VALUES(1,0,0,0,11,0,0,0,'{}','{}','{}','{}');
+
+INSERT INTO
+  col
+VALUES
+  (
+    1,
+    0,
+    0,
+    0,
+    18,
+    0,
+    0,
+    0,
+    '{}',
+    '{}',
+    '{}',
+    '{}',
+    '{}'
+  );

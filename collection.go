@@ -13,39 +13,20 @@ type Collection struct {
 	db        *sql.DB
 	dir       string
 	isTempDir bool
-
-	mod time.Time
-	scm time.Time
-	usn int64
-	ls  time.Time
+	props     *props
 }
 
 func newCollection(db *sql.DB, dir string, isTempDir bool) (*Collection, error) {
-	col := &Collection{
+	props, err := loadProps(db)
+	if err != nil {
+		return nil, err
+	}
+	return &Collection{
 		db:        db,
 		dir:       dir,
 		isTempDir: isTempDir,
-	}
-	if err := col.load(); err != nil {
-		_ = col.Close()
-		return nil, err
-	}
-	return col, nil
-}
-
-func (c *Collection) load() error {
-	const query = `SELECT mod, scm, usn, ls FROM col WHERE id = 1`
-
-	var modMilli, scmSec, lsSec int64
-	err := c.db.QueryRow(query).Scan(&modMilli, &scmSec, &c.usn, &lsSec)
-	if err != nil {
-		return err
-	}
-
-	c.mod = time.UnixMilli(modMilli)
-	c.scm = time.UnixMilli(scmSec)
-	c.ls = time.Unix(lsSec, 0)
-	return nil
+		props:     props,
+	}, nil
 }
 
 func inTempDir(fn func(dir string) (*Collection, error)) (*Collection, error) {
@@ -178,17 +159,42 @@ func (c *Collection) flush() error {
 }
 
 func (c *Collection) USN() int64 {
-	return c.usn
+	return c.props.usn
 }
 
 func (c *Collection) ModTime() time.Time {
-	return c.mod
+	return c.props.mod
 }
 
 func (c *Collection) SchemdModTime() time.Time {
-	return c.scm
+	return c.props.scm
 }
 
 func (c *Collection) LastSyncTime() time.Time {
-	return c.ls
+	return c.props.ls
+}
+
+type props struct {
+	mod time.Time
+	scm time.Time
+	ls  time.Time
+	usn int64
+}
+
+func loadProps(db *sql.DB) (*props, error) {
+	const query = `SELECT mod, scm, ls, usn FROM col WHERE id = 1`
+
+	fn := func(_ sqlQueryer, row sqlRow) (*props, error) {
+		var mod, scm, ls, usn int64
+		if err := row.Scan(&mod, &scm, &ls, &usn); err != nil {
+			return nil, err
+		}
+		return &props{
+			mod: time.UnixMilli(mod),
+			scm: time.UnixMilli(scm),
+			ls:  time.Unix(ls, 0),
+			usn: usn,
+		}, nil
+	}
+	return sqlGet(db, fn, query)
 }
