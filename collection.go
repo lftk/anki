@@ -30,10 +30,6 @@ func newCollection(db *sql.DB, dir string, isTempDir bool) (*Collection, error) 
 		_ = col.Close()
 		return nil, err
 	}
-	if err := os.MkdirAll(col.mediaDir(), 0755); err != nil {
-		_ = col.Close()
-		return nil, err
-	}
 	return col, nil
 }
 

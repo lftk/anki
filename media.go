@@ -60,7 +60,6 @@ func (c *Collection) CreateMedia(name string) (io.WriteCloser, error) {
 	if err := os.MkdirAll(c.mediaDir(), 0755); err != nil {
 		return nil, err
 	}
-
 	path := c.mediaPath(name)
 	f, err := os.Create(path)
 	if err != nil {
