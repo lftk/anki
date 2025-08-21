@@ -4,10 +4,10 @@ import (
 	"crypto/sha1"
 	"database/sql"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"iter"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -173,13 +173,13 @@ VALUES
 			return err
 		}
 
-		cards, err := generateCards(deckID, note, notetype)
+		cards, err := newCardsRequired(deckID, note, notetype)
 		if err != nil {
 			return err
 		}
 
 		for _, card := range cards {
-			if err = c.AddCard(card); err != nil {
+			if err = addCard(tx, card); err != nil {
 				return err
 			}
 		}
@@ -326,17 +326,60 @@ func splitFields(fields string) []string {
 	return strings.Split(fields, fieldSeparator)
 }
 
-func generateCards(deckID int64, note *Note, notetype *Notetype) ([]*Card, error) {
+func newCardsRequired(deckID int64, note *Note, notetype *Notetype) ([]*Card, error) {
 	switch notetype.Config.Kind {
 	case pb.NotetypeConfig_KIND_NORMAL:
-		for _, t := range notetype.Templates {
-			_ = t
-		}
-		// todo
+		return newCardsRequiredNormal(note, notetype)
 	case pb.NotetypeConfig_KIND_CLOZE:
 		// todo
+		return nil, nil
 	default:
-		return nil, errors.New("unknown notetype kind")
+		return nil, fmt.Errorf("invalid or unsupported notetype kind: %s", notetype.Config.Kind)
 	}
-	return nil, nil
+}
+
+func newCardsRequiredNormal(note *Note, notetype *Notetype) ([]*Card, error) {
+	// fields := nonemptyFields(note, notetype)
+	cards := make([]*Card, 0, len(notetype.Templates))
+	for ord, template := range notetype.Templates {
+		ok, err := rendersTemplate(template, nil) // todo
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			card := &Card{
+				NoteID:   note.ID,
+				DeckID:   template.Config.TargetDeckId,
+				Ordinal:  int64(ord),
+				Modified: timeZero(),
+				USN:      -1,
+				Type:     CardTypeNew,
+				Queue:    CardQueueNew,
+			}
+			cards = append(cards, card)
+		}
+	}
+	return cards, nil
+}
+
+func nonemptyFields(note *Note, notetype *Notetype) []string {
+	fields := make([]string, 0, len(note.Fields))
+	for ord, field := range note.Fields {
+		if !fieldIsEmpty(field) {
+			fn := func(f *Field) bool {
+				return f.Ordinal == ord
+			}
+			if i := slices.IndexFunc(notetype.Fields, fn); i != -1 {
+				fields = append(fields, notetype.Fields[i].Name)
+			}
+		}
+	}
+	return fields
+}
+
+var fieldIsEmptyRe = regexp.MustCompile(`(?i)^(?:[\s]|</?(?:br|div)\s*/?>)*$`)
+
+// fieldIsEmpty returns true if the provided text contains only whitespace and/or empty BR/DIV tags.
+func fieldIsEmpty(text string) bool {
+	return fieldIsEmptyRe.MatchString(text)
 }

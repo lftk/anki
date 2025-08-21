@@ -2,6 +2,7 @@ package anki
 
 import (
 	"database/sql"
+	_ "embed"
 	"iter"
 	"time"
 )
@@ -13,8 +14,8 @@ type Card struct {
 	Ordinal        int64
 	Modified       time.Time
 	USN            int64
-	Type           int64
-	Queue          int64
+	Type           CardType
+	Queue          CardQueue
 	Due            int64
 	Interval       int64
 	Factor         int64
@@ -26,6 +27,28 @@ type Card struct {
 	Flags          int64
 	Data           string
 }
+
+type CardType int
+
+const (
+	CardTypeNew     CardType = 0
+	CardTypeLearn   CardType = 1
+	CardTypeReview  CardType = 2
+	CardTypeRelearn CardType = 3
+)
+
+type CardQueue int
+
+const (
+	CardQueueNew           CardQueue = 0
+	CardQueueLearn         CardQueue = 1
+	CardQueueReview        CardQueue = 2
+	CardQueueDayLearn      CardQueue = 3
+	CardQueuePreviewRepeat CardQueue = 4
+	CardQueueSuspended     CardQueue = -1
+	CardQueueSchedBuried   CardQueue = -2
+	CardQueueUserBuried    CardQueue = -3
+)
 
 func (c *Collection) GetCard(id int64) (*Card, error) {
 	const query = `SELECT id, nid, did, ord, mod, usn, type, queue, due, ivl, factor, reps, lapses, left, odue, odid, flags, data FROM cards WHERE id = ?`
@@ -49,6 +72,41 @@ func (c *Collection) AddCard(card *Card) error {
 	})
 }
 
+//go:embed queries/add_card.sql
+var addCardQuery string
+
+func addCard(e sqlExecer, card *Card) error {
+	id := card.ID
+	if id == 0 {
+		id = time.Now().UnixMilli()
+	}
+	args := []any{
+		id,
+		card.NoteID,
+		card.DeckID,
+		card.Ordinal,
+		card.Modified.UnixMilli(),
+		card.USN,
+		card.Type,
+		card.Queue,
+		card.Due,
+		card.Interval,
+		card.Factor,
+		card.Repetitions,
+		card.Lapses,
+		card.Left,
+		card.OriginalDue,
+		card.OriginalDeckID,
+		card.Flags,
+		card.Data,
+	}
+	id, err := sqlInsert(e, addCardQuery, args...)
+	if err == nil {
+		card.ID = id
+	}
+	return err
+}
+
 func (c *Collection) UpdateCard(card *Card) error {
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		card.Modified = time.Now()
@@ -68,6 +126,12 @@ func (c *Collection) ListCards() iter.Seq2[*Card, error] {
 	const query = `SELECT id, nid, did, ord, mod, usn, type, queue, due, ivl, factor, reps, lapses, left, odue, odid, flags, data FROM cards`
 
 	return sqlSelectSeq(c.db, scanCard, query)
+}
+
+func (c *Collection) ListCardsByNote(noteID int64) iter.Seq2[*Card, error] {
+	const query = `SELECT id, nid, did, ord, mod, usn, type, queue, due, ivl, factor, reps, lapses, left, odue, odid, flags, data FROM cards WHERE nid = ?`
+
+	return sqlSelectSeq(c.db, scanCard, query, noteID)
 }
 
 func scanCard(_ sqlQueryer, row sqlRow) (*Card, error) {

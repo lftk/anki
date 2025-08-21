@@ -11,6 +11,27 @@ import (
 	"github.com/alexkappa/mustache"
 )
 
+func rendersTemplate(template *Template, fields map[string]string) (bool, error) {
+	if template.Config.QFormat == "" && template.Config.AFormat == "" {
+		return false, nil
+	}
+
+	q := strings.NewReader(template.Config.QFormat)
+	t, err := mustache.Parse(q)
+	if err != nil {
+		return false, err
+	}
+
+	s, err := t.RenderString(fields)
+	if err != nil {
+		return false, err
+	}
+
+	// TODO
+
+	return s != template.Config.QFormat, nil
+}
+
 // fieldRequirements parses an Anki template and returns a matcher for field requirements
 // based on the provided field ordinals mapping. The matcher can be used to determine
 // which fields are actually used in the template.
