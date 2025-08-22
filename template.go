@@ -11,25 +11,42 @@ import (
 	"github.com/alexkappa/mustache"
 )
 
-func rendersTemplate(template *Template, fields map[string]string) (bool, error) {
-	if template.Config.QFormat == "" && template.Config.AFormat == "" {
+func rendersTemplate(template *Template, fields []string) (bool, error) {
+	if template == nil || template.Config == nil || template.Config.QFormat == "" {
+		// No template or empty QFormat means it can't render anything
 		return false, nil
 	}
 
-	q := strings.NewReader(template.Config.QFormat)
-	t, err := mustache.Parse(q)
+	if len(fields) == 0 {
+		// No fields provided, can't render anything
+		return false, nil
+	}
+
+	h := sha256.New()
+	t, err := mustache.Parse(
+		io.TeeReader(
+			strings.NewReader(template.Config.QFormat), h,
+		),
+	)
 	if err != nil {
 		return false, err
 	}
 
-	s, err := t.RenderString(fields)
+	sentinel := hex.EncodeToString(h.Sum(nil))
+
+	fieldValues := make(map[string]string)
+	for _, field := range fields {
+		fieldValues[field] = sentinel
+	}
+
+	output, err := t.RenderString(fieldValues)
 	if err != nil {
 		return false, err
 	}
 
-	// TODO
-
-	return s != template.Config.QFormat, nil
+	// If the sentinel appears in the output, it means the template rendered
+	// with the provided fields.
+	return strings.Contains(output, sentinel), nil
 }
 
 // fieldRequirements parses an Anki template and returns a matcher for field requirements

@@ -339,10 +339,10 @@ func newCardsRequired(deckID int64, note *Note, notetype *Notetype) ([]*Card, er
 }
 
 func newCardsRequiredNormal(note *Note, notetype *Notetype) ([]*Card, error) {
-	// fields := nonemptyFields(note, notetype)
+	fields := nonemptyFields(note, notetype)
 	cards := make([]*Card, 0, len(notetype.Templates))
 	for ord, template := range notetype.Templates {
-		ok, err := rendersTemplate(template, nil) // todo
+		ok, err := rendersTemplate(template, fields)
 		if err != nil {
 			return nil, err
 		}
