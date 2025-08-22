@@ -2,6 +2,7 @@ package anki
 
 import (
 	"iter"
+	"strings"
 	"time"
 )
 
@@ -86,16 +87,26 @@ func addCard(e sqlExecer, card *Card) error {
 	return err
 }
 
-func (c *Collection) ListCards() iter.Seq2[*Card, error] {
-	const query = `SELECT id, nid, did, ord, mod, usn, type, queue, due, ivl, factor, reps, lapses, left, odue, odid, flags, data FROM cards`
-
-	return sqlSelectSeq(c.db, scanCard, query)
+type ListCardsOptions struct {
+	NoteID *int64
 }
 
-func (c *Collection) ListCardsByNote(noteID int64) iter.Seq2[*Card, error] {
-	const query = `SELECT id, nid, did, ord, mod, usn, type, queue, due, ivl, factor, reps, lapses, left, odue, odid, flags, data FROM cards WHERE nid = ?`
+func (c *Collection) ListCards(opts *ListCardsOptions) iter.Seq2[*Card, error] {
+	var args []any
+	var conds []string
+	if opts != nil {
+		if opts.NoteID != nil {
+			conds = append(conds, "nid")
+			args = append(args, *opts.NoteID)
+		}
+	}
 
-	return sqlSelectSeq(c.db, scanCard, query, noteID)
+	query := getCardQuery
+	if len(conds) > 0 {
+		query += " WHERE " + strings.Join(conds, " = ? AND ") + " = ?"
+	}
+
+	return sqlSelectSeq(c.db, scanCard, query, args...)
 }
 
 func scanCard(_ sqlQueryer, row sqlRow) (*Card, error) {
