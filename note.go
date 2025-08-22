@@ -3,6 +3,7 @@ package anki
 import (
 	"crypto/sha1"
 	"database/sql"
+	_ "embed"
 	"encoding/binary"
 	"fmt"
 	"iter"
@@ -86,53 +87,10 @@ func (c *Collection) ListNotes() iter.Seq2[*Note, error] {
 	return sqlSelectSeq(c.db, scanNote, query)
 }
 
-func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error {
-	const query = `
-INSERT INTO
-  notes (
-    id,
-    guid,
-    mid,
-    mod,
-    usn,
-    tags,
-    flds,
-    sfld,
-    csum,
-    flags,
-    data
-  )
-VALUES
-  (
-    (
-      CASE
-        WHEN ?1 IN (
-          SELECT
-            id
-          FROM
-            notes
-        ) THEN (
-          SELECT
-            max(id) + 1
-          FROM
-            notes
-        )
-        ELSE ?1
-      END
-    ),
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?, -- 0
-    ?, -- ""
-  )
-`
+//go:embed queries/add_note.sql
+var addNoteQuery string
 
+func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error {
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		if note.GUID == "" {
 			var err error
@@ -168,7 +126,7 @@ VALUES
 			note.Flags,
 			note.Data,
 		}
-		note.ID, err = sqlInsert(tx, query, args...)
+		note.ID, err = sqlInsert(tx, addNoteQuery, args...)
 		if err != nil {
 			return err
 		}
