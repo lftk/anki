@@ -329,16 +329,15 @@ func splitFields(fields string) []string {
 func newCardsRequired(deckID int64, note *Note, notetype *Notetype) ([]*Card, error) {
 	switch notetype.Config.Kind {
 	case pb.NotetypeConfig_KIND_NORMAL:
-		return newCardsRequiredNormal(note, notetype)
+		return newCardsRequiredNormal(deckID, note, notetype)
 	case pb.NotetypeConfig_KIND_CLOZE:
-		// todo
-		return nil, nil
+		return newCardsRequiredCloze(deckID, note)
 	default:
 		return nil, fmt.Errorf("invalid or unsupported notetype kind: %s", notetype.Config.Kind)
 	}
 }
 
-func newCardsRequiredNormal(note *Note, notetype *Notetype) ([]*Card, error) {
+func newCardsRequiredNormal(deckID int64, note *Note, notetype *Notetype) ([]*Card, error) {
 	fields := nonemptyFields(note, notetype)
 	cards := make([]*Card, 0, len(notetype.Templates))
 	for ord, template := range notetype.Templates {
@@ -347,9 +346,13 @@ func newCardsRequiredNormal(note *Note, notetype *Notetype) ([]*Card, error) {
 			return nil, err
 		}
 		if ok {
+			targetDeckID := template.Config.TargetDeckId
+			if targetDeckID == 0 {
+				targetDeckID = deckID
+			}
 			card := &Card{
 				NoteID:   note.ID,
-				DeckID:   template.Config.TargetDeckId,
+				DeckID:   targetDeckID,
 				Ordinal:  int64(ord),
 				Modified: timeZero(),
 				USN:      -1,
@@ -382,4 +385,25 @@ var fieldIsEmptyRe = regexp.MustCompile(`(?i)^(?:[\s]|</?(?:br|div)\s*/?>)*$`)
 // fieldIsEmpty returns true if the provided text contains only whitespace and/or empty BR/DIV tags.
 func fieldIsEmpty(text string) bool {
 	return fieldIsEmptyRe.MatchString(text)
+}
+
+func newCardsRequiredCloze(deckID int64, note *Note) ([]*Card, error) {
+	set, err := clozeNumberInFields(note.Fields)
+	if err != nil {
+		return nil, err
+	}
+	cards := make([]*Card, 0, len(set))
+	for _, ord := range set {
+		card := &Card{
+			NoteID:   note.ID,
+			DeckID:   deckID,
+			Ordinal:  int64(ord - 1),
+			Modified: timeZero(),
+			USN:      -1,
+			Type:     CardTypeNew,
+			Queue:    CardQueueNew,
+		}
+		cards = append(cards, card)
+	}
+	return cards, nil
 }
