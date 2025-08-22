@@ -3,7 +3,6 @@ package anki
 import (
 	"crypto/sha1"
 	"database/sql"
-	_ "embed"
 	"encoding/binary"
 	"fmt"
 	"iter"
@@ -86,9 +85,6 @@ func (c *Collection) ListNotes() iter.Seq2[*Note, error] {
 
 	return sqlSelectSeq(c.db, scanNote, query)
 }
-
-//go:embed queries/add_note.sql
-var addNoteQuery string
 
 func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error {
 	return sqlTransact(c.db, func(tx *sql.Tx) error {

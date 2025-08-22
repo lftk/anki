@@ -2,7 +2,6 @@ package anki
 
 import (
 	"database/sql"
-	_ "embed"
 	"iter"
 	"time"
 )
@@ -71,9 +70,6 @@ func (c *Collection) AddCard(card *Card) error {
 		return err
 	})
 }
-
-//go:embed queries/add_card.sql
-var addCardQuery string
 
 func addCard(e sqlExecer, card *Card) error {
 	id := card.ID
