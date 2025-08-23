@@ -30,9 +30,7 @@ type Note struct {
 }
 
 func (c *Collection) GetNote(id int64) (*Note, error) {
-	const query = `SELECT id, guid, mid, mod, usn, tags, flds, csum, flags, data FROM notes WHERE id = ?`
-
-	return sqlGet(c.db, scanNote, query, id)
+	return sqlGet(c.db, scanNote, getNoteQuery+" WHERE id = ?", id)
 }
 
 func (c *Collection) AddNote(deckID int64, note *Note) error {
@@ -80,10 +78,27 @@ func deleteNote(e sqlExecer, noteID int64) error {
 	return deleteCards(e, noteID)
 }
 
-func (c *Collection) ListNotes() iter.Seq2[*Note, error] {
-	const query = `SELECT id, guid, mid, mod, usn, tags, flds, csum, flags, data FROM notes`
+type ListNotesOptions struct {
+	NotetypeID *int64
+}
 
-	return sqlSelectSeq(c.db, scanNote, query)
+func (c *Collection) ListNotes(opts *ListNotesOptions) iter.Seq2[*Note, error] {
+	var args []any
+	var conds []string
+
+	if opts != nil {
+		if opts.NotetypeID != nil {
+			conds = append(conds, "mid = ?")
+			args = append(args, *opts.NotetypeID)
+		}
+	}
+
+	query := getNoteQuery
+	if len(conds) > 0 {
+		query += " WHERE " + strings.Join(conds, " AND ")
+	}
+
+	return sqlSelectSeq(c.db, scanNote, query, args...)
 }
 
 func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error {

@@ -15,15 +15,13 @@ type Deck struct {
 }
 
 func (c *Collection) GetDeck(id int64) (*Deck, error) {
-	const query = `SELECT id, name, mtime_secs, usn, common, kind FROM decks WHERE id = ?`
-
-	return sqlGet(c.db, scanDeck, query, id)
+	return sqlGet(c.db, scanDeck, getDeckQuery+" WHERE id = ?", id)
 }
 
-func (c *Collection) ListDecks() iter.Seq2[*Deck, error] {
-	const query = `SELECT id, name, mtime_secs, usn, common, kind FROM decks`
+type ListDecksOptions struct{}
 
-	return sqlSelectSeq(c.db, scanDeck, query)
+func (c *Collection) ListDecks(opts *ListDecksOptions) iter.Seq2[*Deck, error] {
+	return sqlSelectSeq(c.db, scanDeck, getDeckQuery)
 }
 
 func scanDeck(_ sqlQueryer, row sqlRow) (*Deck, error) {

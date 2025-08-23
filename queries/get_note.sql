@@ -1,0 +1,13 @@
+SELECT
+  id,
+  guid,
+  mid,
+  mod,
+  usn,
+  tags,
+  flds,
+  csum,
+  flags,
+  data
+FROM
+  notes

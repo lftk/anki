@@ -26,15 +26,13 @@ func (c *Collection) DeleteTag(name string) error {
 }
 
 func (c *Collection) GetTag(name string) (*Tag, error) {
-	const query = `SELECT tag, usn, collapsed FROM tags WHERE tag = ?`
-
-	return sqlGet(c.db, scanTag, query, name)
+	return sqlGet(c.db, scanTag, getTagQuery+" WHERE tag = ?", name)
 }
 
-func (c *Collection) ListTags() iter.Seq2[*Tag, error] {
-	const query = `SELECT tag, usn, collapsed FROM tags`
+type ListTagsOptions struct{}
 
-	return sqlSelectSeq(c.db, scanTag, query)
+func (c *Collection) ListTags(opts *ListTagsOptions) iter.Seq2[*Tag, error] {
+	return sqlSelectSeq(c.db, scanTag, getTagQuery)
 }
 
 func scanTag(_ sqlQueryer, row sqlRow) (*Tag, error) {

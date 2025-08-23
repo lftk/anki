@@ -33,9 +33,7 @@ type Template struct {
 }
 
 func (c *Collection) GetNotetype(id int64) (*Notetype, error) {
-	const query = `SELECT id, name, mtime_secs, usn, config FROM notetypes WHERE id = ?`
-
-	return sqlGet(c.db, scanNotetype, query, id)
+	return sqlGet(c.db, scanNotetype, getNotetypeQuery+" WHERE id = ?", id)
 }
 
 func (c *Collection) AddNotetype(notetype *Notetype) error {
@@ -138,10 +136,10 @@ func (c *Collection) DeleteNotetype(id int64) error {
 	})
 }
 
-func (c *Collection) ListNotetypes() iter.Seq2[*Notetype, error] {
-	const query = `SELECT id, name, mtime_secs, usn, config FROM notetypes`
+type ListNotetypesOptions struct{}
 
-	return sqlSelectSeq(c.db, scanNotetype, query)
+func (c *Collection) ListNotetypes(opts *ListNotetypesOptions) iter.Seq2[*Notetype, error] {
+	return sqlSelectSeq(c.db, scanNotetype, getNotetypeQuery)
 }
 
 func addField(tx *sql.Tx, notetypeID int64, field *Field) error {

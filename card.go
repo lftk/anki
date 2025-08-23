@@ -50,9 +50,7 @@ const (
 )
 
 func (c *Collection) GetCard(id int64) (*Card, error) {
-	const query = `SELECT id, nid, did, ord, mod, usn, type, queue, due, ivl, factor, reps, lapses, left, odue, odid, flags, data FROM cards WHERE id = ?`
-
-	return sqlGet(c.db, scanCard, query, id)
+	return sqlGet(c.db, scanCard, getCardQuery+" WHERE id = ?", id)
 }
 
 func addCard(e sqlExecer, card *Card) error {
@@ -98,19 +96,19 @@ func (c *Collection) ListCards(opts *ListCardsOptions) iter.Seq2[*Card, error] {
 
 	if opts != nil {
 		if opts.NoteID != nil {
-			conds = append(conds, "nid")
+			conds = append(conds, "nid = ?")
 			args = append(args, *opts.NoteID)
 		}
 
 		if opts.DeckID != nil {
-			conds = append(conds, "did")
+			conds = append(conds, "did = ?")
 			args = append(args, *opts.DeckID)
 		}
 	}
 
 	query := getCardQuery
 	if len(conds) > 0 {
-		query += " WHERE " + strings.Join(conds, " = ? AND ") + " = ?"
+		query += " WHERE " + strings.Join(conds, " AND ")
 	}
 
 	return sqlSelectSeq(c.db, scanCard, query, args...)
