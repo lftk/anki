@@ -89,15 +89,22 @@ func addCard(e sqlExecer, card *Card) error {
 
 type ListCardsOptions struct {
 	NoteID *int64
+	DeckID *int64
 }
 
 func (c *Collection) ListCards(opts *ListCardsOptions) iter.Seq2[*Card, error] {
 	var args []any
 	var conds []string
+
 	if opts != nil {
 		if opts.NoteID != nil {
 			conds = append(conds, "nid")
 			args = append(args, *opts.NoteID)
+		}
+
+		if opts.DeckID != nil {
+			conds = append(conds, "did")
+			args = append(args, *opts.DeckID)
 		}
 	}
 
