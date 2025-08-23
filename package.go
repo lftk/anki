@@ -168,6 +168,9 @@ func writeMediaEntries(w *zip.Writer, dir string) error {
 		return nil
 	}
 	if err := filepath.WalkDir(dir, fn); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			err = nil
+		}
 		return err
 	}
 
