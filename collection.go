@@ -3,7 +3,6 @@ package anki
 import (
 	"archive/zip"
 	"database/sql"
-	_ "embed"
 	"io"
 	"os"
 	"time"
@@ -189,7 +188,7 @@ func loadProps(db *sql.DB) (*props, error) {
 		return &props{
 			mod: time.UnixMilli(mod),
 			scm: time.UnixMilli(scm),
-			ls:  time.Unix(ls, 0),
+			ls:  time.UnixMilli(ls),
 			usn: usn,
 		}, nil
 	}
