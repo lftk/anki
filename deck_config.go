@@ -4,9 +4,8 @@ import (
 	"iter"
 	"time"
 
-	"google.golang.org/protobuf/proto"
-
 	"github.com/lftk/anki/internal/pb"
+	"google.golang.org/protobuf/proto"
 )
 
 type DeckConfig struct {
@@ -65,35 +64,42 @@ var DefaultDeckConfig = &pb.DeckConfig{
 }
 
 func (c *Collection) AddDeckConfig(config *DeckConfig) error {
-	const query = `
-INSERT
-  OR REPLACE INTO deck_config (id, name, usn, mtime_secs, config)
-VALUES (?, ?, ?, ?, ?)	
-`
+	id := config.ID
+	if id == 0 {
+		id = time.Now().UnixMilli()
+	}
 
 	inner, err := proto.Marshal(config.Config)
 	if err != nil {
 		return err
 	}
-	return sqlExecute(c.db, query, config.ID, config.Name, config.USN, config.Modified.Unix(), inner)
+
+	args := []any{
+		id,
+		config.Name,
+		config.USN,
+		timeUnix(config.Modified),
+		inner,
+	}
+	id, err = sqlInsert(c.db, addDeckConfigQuery, args...)
+	if err == nil {
+		config.ID = id
+	}
+	return err
 }
 
 func (c *Collection) GetDeckConfig(id int64) (*DeckConfig, error) {
-	const query = `SELECT id, name, mtime_secs, usn, config FROM deck_config WHERE id = ?`
-
-	return sqlGet(c.db, scanDeckConfig, query, id)
+	return sqlGet(c.db, scanDeckConfig, getDeckConfigQuery+" WHERE id = ?", id)
 }
 
 func (c *Collection) DeleteDeckConfig(id int64) error {
-	return sqlExecute(c.db, "DELETE FROM deck_config WHERE id = ?", id)
+	return sqlExecute(c.db, deleteDeckConfigQuery, id)
 }
 
 type ListDeckConfigsOptions struct{}
 
 func (c *Collection) ListDeckConfigs(*ListDeckConfigsOptions) iter.Seq2[*DeckConfig, error] {
-	const query = `SELECT id, name, mtime_secs, usn, config FROM deck_config`
-
-	return sqlSelectSeq(c.db, scanDeckConfig, query)
+	return sqlSelectSeq(c.db, scanDeckConfig, getDeckConfigQuery)
 }
 
 func scanDeckConfig(_ sqlQueryer, row sqlRow) (*DeckConfig, error) {

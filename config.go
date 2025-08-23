@@ -13,30 +13,27 @@ type Config struct {
 }
 
 func (c *Collection) SetConfig(config *Config) error {
-	const query = `
-INSERT
-  OR REPLACE INTO config (key, usn, mtime_secs, val)
-VALUES (?, ?, ?, ?)	
-`
-	return sqlExecute(c.db, query, config.Key, config.USN, config.Modified.Unix(), config.Value)
+	args := []any{
+		config.Key,
+		config.USN,
+		timeUnix(config.Modified),
+		config.Value,
+	}
+	return sqlExecute(c.db, setConfigQuery, args...)
 }
 
 func (c *Collection) GetConfig(key string) (*Config, error) {
-	const query = `SELECT key, usn, mtime_secs, val FROM config WHERE key = ?`
-
-	return sqlGet(c.db, scanConfig, query, key)
+	return sqlGet(c.db, scanConfig, getConfigQuery+" WHERE key = ?", key)
 }
 
 func (c *Collection) DeleteConfig(key string) error {
-	return sqlExecute(c.db, "DELETE FROM config WHERE key = ?", key)
+	return sqlExecute(c.db, deleteConfigQuery, key)
 }
 
 type ListConfigsOptions struct{}
 
 func (c *Collection) ListConfigs(*ListConfigsOptions) iter.Seq2[*Config, error] {
-	const query = `SELECT key, usn, mtime_secs, val FROM config`
-
-	return sqlSelectSeq(c.db, scanConfig, query)
+	return sqlSelectSeq(c.db, scanConfig, getConfigQuery)
 }
 
 func scanConfig(_ sqlQueryer, row sqlRow) (*Config, error) {

@@ -31,6 +31,24 @@ var getNotetypeQuery string
 //go:embed queries/get_tag.sql
 var getTagQuery string
 
+//go:embed queries/set_config.sql
+var setConfigQuery string
+
+//go:embed queries/get_config.sql
+var getConfigQuery string
+
+//go:embed queries/delete_config.sql
+var deleteConfigQuery string
+
+//go:embed queries/add_deck_config.sql
+var addDeckConfigQuery string
+
+//go:embed queries/get_deck_config.sql
+var getDeckConfigQuery string
+
+//go:embed queries/delete_deck_config.sql
+var deleteDeckConfigQuery string
+
 //go:embed queries/delete_cards.sql
 var deleteCardsQuery string
 
