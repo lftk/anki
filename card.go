@@ -63,7 +63,7 @@ func addCard(e sqlExecer, card *Card) error {
 		card.NoteID,
 		card.DeckID,
 		card.Ordinal,
-		card.Modified.UnixMilli(),
+		max(card.Modified.Unix(), 0),
 		card.USN,
 		card.Type,
 		card.Queue,
@@ -143,7 +143,7 @@ func scanCard(_ sqlQueryer, row sqlRow) (*Card, error) {
 		return nil, err
 	}
 
-	card.Modified = time.UnixMilli(mod)
+	card.Modified = time.Unix(mod, 0)
 
 	return &card, nil
 }

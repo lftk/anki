@@ -10,6 +10,9 @@ var schemaQuery string
 //go:embed queries/add_card.sql
 var addCardQuery string
 
+//go:embed queries/add_deck.sql
+var addDeckQuery string
+
 //go:embed queries/get_card.sql
 var getCardQuery string
 

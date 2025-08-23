@@ -14,6 +14,26 @@ type Deck struct {
 	Kind     []byte
 }
 
+func (c *Collection) AddDeck(deck *Deck) error {
+	id := deck.ID
+	if id == 0 {
+		id = time.Now().UnixMilli()
+	}
+	args := []any{
+		id,
+		deck.Name,
+		max(deck.Modified.Unix(), 0),
+		deck.USN,
+		deck.Common,
+		deck.Kind,
+	}
+	id, err := sqlInsert(c.db, addDeckQuery, args...)
+	if err == nil {
+		deck.ID = id
+	}
+	return err
+}
+
 func (c *Collection) GetDeck(id int64) (*Deck, error) {
 	return sqlGet(c.db, scanDeck, getDeckQuery+" WHERE id = ?", id)
 }

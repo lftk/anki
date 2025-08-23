@@ -10,7 +10,7 @@ type Tag struct {
 	Expanded bool
 }
 
-func (c *Collection) SetTag(tag *Tag) error {
+func (c *Collection) AddTag(tag *Tag) error {
 	return sqlExecute(c.db, setTagQuery, tag.Name, tag.USN, !tag.Expanded)
 }
 

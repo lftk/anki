@@ -124,7 +124,7 @@ func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error
 			id,
 			note.GUID,
 			note.NotetypeID,
-			note.Modified.UnixMilli(),
+			note.Modified.Unix(),
 			note.USN,
 			joinTags(note.Tags),
 			joinFields(note.Fields),
@@ -167,7 +167,7 @@ func (c *Collection) updateNote(note *Note, notetype *Notetype) error {
 		args := []any{
 			note.GUID,
 			note.NotetypeID,
-			note.Modified.UnixMilli(),
+			note.Modified.Unix(),
 			note.USN,
 			joinTags(note.Tags),
 			joinFields(note.Fields),
@@ -248,7 +248,7 @@ func scanNote(_ sqlQueryer, row sqlRow) (*Note, error) {
 		return nil, err
 	}
 
-	note.Modified = time.UnixMilli(mod)
+	note.Modified = time.Unix(mod, 0)
 	note.Tags = splitTags(tags)
 	note.Fields = splitFields(fields)
 
