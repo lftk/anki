@@ -63,7 +63,7 @@ func addCard(e sqlExecer, card *Card) error {
 		card.NoteID,
 		card.DeckID,
 		card.Ordinal,
-		max(card.Modified.Unix(), 0),
+		timeUnix(card.Modified),
 		card.USN,
 		card.Type,
 		card.Queue,

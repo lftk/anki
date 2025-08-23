@@ -49,7 +49,7 @@ func (c *Collection) AddNotetype(notetype *Notetype) error {
 		args := []any{
 			notetype.ID,
 			notetype.Name,
-			notetype.Modified.Unix(),
+			timeUnix(notetype.Modified),
 			notetype.USN,
 			config,
 		}
@@ -86,7 +86,7 @@ func (c *Collection) UpdateNotetype(notetype *Notetype) error {
 
 		args := []any{
 			notetype.Name,
-			notetype.Modified.Unix(),
+			timeUnix(notetype.Modified),
 			notetype.USN,
 			config,
 			notetype.ID,
@@ -168,7 +168,7 @@ func addTemplate(tx *sql.Tx, notetypeID int64, template *Template) error {
 		notetypeID,
 		template.Ordinal,
 		template.Name,
-		template.Modified.Unix(),
+		timeUnix(template.Modified),
 		template.USN,
 		config,
 	}

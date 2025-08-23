@@ -22,7 +22,7 @@ func (c *Collection) AddDeck(deck *Deck) error {
 	args := []any{
 		id,
 		deck.Name,
-		max(deck.Modified.Unix(), 0),
+		timeUnix(deck.Modified),
 		deck.USN,
 		deck.Common,
 		deck.Kind,

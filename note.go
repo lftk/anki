@@ -124,7 +124,7 @@ func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error
 			id,
 			note.GUID,
 			note.NotetypeID,
-			note.Modified.Unix(),
+			timeUnix(note.Modified),
 			note.USN,
 			joinTags(note.Tags),
 			joinFields(note.Fields),
@@ -167,7 +167,7 @@ func (c *Collection) updateNote(note *Note, notetype *Notetype) error {
 		args := []any{
 			note.GUID,
 			note.NotetypeID,
-			note.Modified.Unix(),
+			timeUnix(note.Modified),
 			note.USN,
 			joinTags(note.Tags),
 			joinFields(note.Fields),
