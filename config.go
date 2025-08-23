@@ -31,7 +31,9 @@ func (c *Collection) DeleteConfig(key string) error {
 	return sqlExecute(c.db, "DELETE FROM config WHERE key = ?", key)
 }
 
-func (c *Collection) ListConfigs() iter.Seq2[*Config, error] {
+type ListConfigsOptions struct{}
+
+func (c *Collection) ListConfigs(*ListConfigsOptions) iter.Seq2[*Config, error] {
 	const query = `SELECT key, usn, mtime_secs, val FROM config`
 
 	return sqlSelectSeq(c.db, scanConfig, query)

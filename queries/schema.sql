@@ -13,6 +13,7 @@ CREATE TABLE col (
   dconf text NOT NULL,
   tags text NOT NULL
 );
+
 CREATE TABLE notetypes (
   id integer NOT NULL PRIMARY KEY,
   name text NOT NULL,
@@ -20,8 +21,11 @@ CREATE TABLE notetypes (
   usn integer NOT NULL,
   config blob NOT NULL
 );
+
 CREATE UNIQUE INDEX idx_notetypes_name ON notetypes (name);
+
 CREATE INDEX idx_notetypes_usn ON notetypes (usn);
+
 CREATE TABLE fields (
   ntid integer NOT NULL,
   ord integer NOT NULL,
@@ -29,7 +33,9 @@ CREATE TABLE fields (
   config blob NOT NULL,
   PRIMARY KEY (ntid, ord)
 ) without rowid;
+
 CREATE UNIQUE INDEX idx_fields_name_ntid ON fields (name, ntid);
+
 CREATE TABLE templates (
   ntid integer NOT NULL,
   ord integer NOT NULL,
@@ -39,8 +45,11 @@ CREATE TABLE templates (
   config blob NOT NULL,
   PRIMARY KEY (ntid, ord)
 ) without rowid;
+
 CREATE UNIQUE INDEX idx_templates_name_ntid ON templates (name, ntid);
+
 CREATE INDEX idx_templates_usn ON templates (usn);
+
 CREATE TABLE notes (
   id integer PRIMARY KEY,
   guid text NOT NULL,
@@ -56,6 +65,7 @@ CREATE TABLE notes (
   flags integer NOT NULL,
   data text NOT NULL
 );
+
 CREATE TABLE cards (
   id integer PRIMARY KEY,
   nid integer NOT NULL,
@@ -76,6 +86,7 @@ CREATE TABLE cards (
   flags integer NOT NULL,
   data text NOT NULL
 );
+
 CREATE TABLE revlog (
   id integer PRIMARY KEY,
   cid integer NOT NULL,
@@ -87,23 +98,38 @@ CREATE TABLE revlog (
   time integer NOT NULL,
   type integer NOT NULL
 );
+
 CREATE TABLE graves (
   usn integer NOT NULL,
   oid integer NOT NULL,
   type integer NOT NULL
 );
+
 CREATE TABLE config (
   KEY text NOT NULL PRIMARY KEY,
   usn integer NOT NULL,
   mtime_secs integer NOT NULL,
   val blob NOT NULL
 ) without rowid;
+
 CREATE TABLE tags (
   tag text NOT NULL PRIMARY KEY COLLATE unicase,
   usn integer NOT NULL,
   collapsed boolean NOT NULL,
   config blob NULL
 ) without rowid;
+
+CREATE TABLE decks (
+  id integer PRIMARY KEY NOT NULL,
+  name text NOT NULL COLLATE unicase,
+  mtime_secs integer NOT NULL,
+  usn integer NOT NULL,
+  common blob NOT NULL,
+  kind blob NOT NULL
+);
+
+CREATE UNIQUE INDEX idx_decks_name ON decks (name);
+
 CREATE TABLE deck_config (
   id integer PRIMARY KEY NOT NULL,
   name text NOT NULL COLLATE unicase,
@@ -111,16 +137,23 @@ CREATE TABLE deck_config (
   usn integer NOT NULL,
   config blob NOT NULL
 );
+
 -- syncing
 CREATE INDEX ix_notes_usn ON notes (usn);
+
 CREATE INDEX ix_cards_usn ON cards (usn);
+
 CREATE INDEX ix_revlog_usn ON revlog (usn);
+
 -- card spacing, etc
 CREATE INDEX ix_cards_nid ON cards (nid);
+
 -- scheduling and deck limiting
 CREATE INDEX ix_cards_sched ON cards (did, queue, due);
+
 -- revlog by card
 CREATE INDEX ix_revlog_cid ON revlog (cid);
+
 -- field uniqueness
 CREATE INDEX ix_notes_csum ON notes (csum);
 

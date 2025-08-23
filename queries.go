@@ -4,6 +4,9 @@ import (
 	_ "embed"
 )
 
+//go:embed queries/schema.sql
+var schemaQuery string
+
 //go:embed queries/add_card.sql
 var addCardQuery string
 

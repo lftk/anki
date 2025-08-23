@@ -42,9 +42,6 @@ func inTempDir(fn func(dir string) (*Collection, error)) (*Collection, error) {
 	return col, nil
 }
 
-//go:embed schema.sql
-var ddl string
-
 func Create() (*Collection, error) {
 	return inTempDir(func(dir string) (*Collection, error) {
 		db, err := sqlite3Open(databasePath(dir) + "?_journal=WAL&mode=rwc")
@@ -52,7 +49,7 @@ func Create() (*Collection, error) {
 			return nil, err
 		}
 
-		if err := sqlExecute(db, ddl); err != nil {
+		if err := sqlExecute(db, schemaQuery); err != nil {
 			_ = db.Close()
 			return nil, err
 		}
