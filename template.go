@@ -9,6 +9,7 @@ import (
 	"github.com/alexkappa/mustache"
 )
 
+// rendersTemplate checks if a template renders to a non-empty card given a set of fields.
 func rendersTemplate(template *Template, fields []string) (bool, error) {
 	if template == nil || template.Config == nil || template.Config.QFormat == "" {
 		// No template or empty QFormat means it can't render anything

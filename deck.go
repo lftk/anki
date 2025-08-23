@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Deck represents a deck in Anki.
 type Deck struct {
 	ID       int64
 	Name     string
@@ -14,6 +15,7 @@ type Deck struct {
 	Kind     []byte
 }
 
+// AddDeck adds a new deck to the collection.
 func (c *Collection) AddDeck(deck *Deck) error {
 	id := deck.ID
 	if id == 0 {
@@ -34,16 +36,20 @@ func (c *Collection) AddDeck(deck *Deck) error {
 	return err
 }
 
+// GetDeck gets a deck by its ID.
 func (c *Collection) GetDeck(id int64) (*Deck, error) {
 	return sqlGet(c.db, scanDeck, getDeckQuery+" WHERE id = ?", id)
 }
 
+// ListDecksOptions specifies options for listing decks.
 type ListDecksOptions struct{}
 
+// ListDecks lists all decks.
 func (c *Collection) ListDecks(*ListDecksOptions) iter.Seq2[*Deck, error] {
 	return sqlSelectSeq(c.db, scanDeck, getDeckQuery)
 }
 
+// scanDeck scans a deck from a database row.
 func scanDeck(_ sqlQueryer, row sqlRow) (*Deck, error) {
 	var deck Deck
 	var mod int64

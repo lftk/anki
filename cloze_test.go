@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+// TestClozeNumberInFields tests the clozeNumberInFields function.
 func TestClozeNumberInFields(t *testing.T) {
 	tests := []struct {
 		name    string

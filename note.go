@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// Note represents a note in Anki.
 type Note struct {
 	ID         int64
 	GUID       string
@@ -24,10 +25,12 @@ type Note struct {
 	Data       string
 }
 
+// GetNote gets a note by its ID.
 func (c *Collection) GetNote(id int64) (*Note, error) {
 	return sqlGet(c.db, scanNote, getNoteQuery+" WHERE id = ?", id)
 }
 
+// AddNote adds a new note to the collection.
 func (c *Collection) AddNote(deckID int64, note *Note) error {
 	notetype, err := c.GetNotetype(note.NotetypeID)
 	if err != nil {
@@ -36,6 +39,7 @@ func (c *Collection) AddNote(deckID int64, note *Note) error {
 	return c.addNote(deckID, note, notetype)
 }
 
+// UpdateNote updates an existing note in the collection.
 func (c *Collection) UpdateNote(note *Note) error {
 	notetype, err := c.GetNotetype(note.NotetypeID)
 	if err != nil {
@@ -44,12 +48,14 @@ func (c *Collection) UpdateNote(note *Note) error {
 	return c.updateNote(note, notetype)
 }
 
+// DeleteNote deletes a note from the collection by its ID.
 func (c *Collection) DeleteNote(id int64) error {
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		return deleteNote(tx, id)
 	})
 }
 
+// deleteNotes deletes all notes of a given notetype.
 func deleteNotes(e sqlExt, notetypeID int64) error {
 	for id, err := range sqlSelectSeq(e, scanValue[int64], listNoteIDsQuery, notetypeID) {
 		if err != nil {
@@ -62,6 +68,7 @@ func deleteNotes(e sqlExt, notetypeID int64) error {
 	return nil
 }
 
+// deleteNote deletes a note and its associated cards.
 func deleteNote(e sqlExecer, noteID int64) error {
 	if err := sqlExecute(e, deleteNoteQuery, noteID); err != nil {
 		return err
@@ -69,10 +76,12 @@ func deleteNote(e sqlExecer, noteID int64) error {
 	return deleteCards(e, noteID)
 }
 
+// ListNotesOptions specifies options for listing notes.
 type ListNotesOptions struct {
 	NotetypeID *int64
 }
 
+// ListNotes lists notes with optional filtering.
 func (c *Collection) ListNotes(opts *ListNotesOptions) iter.Seq2[*Note, error] {
 	var args []any
 	var conds []string
@@ -92,6 +101,7 @@ func (c *Collection) ListNotes(opts *ListNotesOptions) iter.Seq2[*Note, error] {
 	return sqlSelectSeq(c.db, scanNote, query, args...)
 }
 
+// addNote is an internal helper to add a note.
 func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error {
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		if note.GUID == "" {
@@ -145,6 +155,7 @@ func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error
 	})
 }
 
+// updateNote is an internal helper to update a note.
 func (c *Collection) updateNote(note *Note, notetype *Notetype) error {
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		note.Modified = time.Now()
@@ -173,6 +184,7 @@ func (c *Collection) updateNote(note *Note, notetype *Notetype) error {
 	})
 }
 
+// prepareNoteFields prepares the first field and sort field for a note.
 func prepareNoteFields(note *Note, notetype *Notetype) (fld1, sfld string, err error) {
 	if len(note.Fields) == 0 {
 		err = fmt.Errorf("cannot process note with no fields")
@@ -192,6 +204,7 @@ func prepareNoteFields(note *Note, notetype *Notetype) (fld1, sfld string, err e
 	return
 }
 
+// fieldChecksum calculates the checksum of a field.
 func fieldChecksum(field string) int64 {
 	h := sha1.New()
 	h.Write([]byte(field))
@@ -204,6 +217,7 @@ var (
 	mediaFileRegex = regexp.MustCompile(`(?i)<img[^>]+src=["']?([^"'>]+)["']?[^>]*>|\[sound:([^\]]+)\]|\[anki:sound:([^\]]+)\]`)
 )
 
+// stripHTML strips HTML tags from a string, preserving media file references.
 func stripHTML(s string) string {
 	repl := func(match string) string {
 		submatches := mediaFileRegex.FindStringSubmatch(match)
@@ -217,6 +231,7 @@ func stripHTML(s string) string {
 	return htmlTagRegex.ReplaceAllString(mediaFileRegex.ReplaceAllStringFunc(s, repl), "")
 }
 
+// scanNote scans a note from a database row.
 func scanNote(_ sqlQueryer, row sqlRow) (*Note, error) {
 	var note Note
 	var mod int64
@@ -247,6 +262,7 @@ func scanNote(_ sqlQueryer, row sqlRow) (*Note, error) {
 	return &note, nil
 }
 
+// joinTags joins a slice of tags into a single string.
 func joinTags(tags []string) string {
 	if len(tags) == 0 {
 		return ""
@@ -254,20 +270,24 @@ func joinTags(tags []string) string {
 	return " " + strings.Join(tags, " ") + " "
 }
 
+// splitTags splits a string of tags into a slice.
 func splitTags(tags string) []string {
 	return strings.FieldsFunc(tags, isTagSeparator)
 }
 
+// isTagSeparator checks if a rune is a tag separator.
 func isTagSeparator(r rune) bool {
 	return r == ' ' || r == '\u3000'
 }
 
 const fieldSeparator = "\x1f"
 
+// joinFields joins a slice of fields into a single string.
 func joinFields(fields []string) string {
 	return strings.Join(fields, fieldSeparator)
 }
 
+// splitFields splits a string of fields into a slice.
 func splitFields(fields string) []string {
 	return strings.Split(fields, fieldSeparator)
 }

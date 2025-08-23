@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Card represents a card in Anki.
 type Card struct {
 	ID             int64
 	NoteID         int64
@@ -27,32 +28,48 @@ type Card struct {
 	Data           string
 }
 
+// CardType represents the type of a card.
 type CardType int
 
 const (
-	CardTypeNew     CardType = 0
-	CardTypeLearn   CardType = 1
-	CardTypeReview  CardType = 2
+	// CardTypeNew is a new card.
+	CardTypeNew CardType = 0
+	// CardTypeLearn is a learning card.
+	CardTypeLearn CardType = 1
+	// CardTypeReview is a review card.
+	CardTypeReview CardType = 2
+	// CardTypeRelearn is a relearning card.
 	CardTypeRelearn CardType = 3
 )
 
+// CardQueue represents the queue of a card.
 type CardQueue int
 
 const (
-	CardQueueNew           CardQueue = 0
-	CardQueueLearn         CardQueue = 1
-	CardQueueReview        CardQueue = 2
-	CardQueueDayLearn      CardQueue = 3
+	// CardQueueNew is the new card queue.
+	CardQueueNew CardQueue = 0
+	// CardQueueLearn is the learning queue.
+	CardQueueLearn CardQueue = 1
+	// CardQueueReview is the review queue.
+	CardQueueReview CardQueue = 2
+	// CardQueueDayLearn is the day learning queue.
+	CardQueueDayLearn CardQueue = 3
+	// CardQueuePreviewRepeat is the preview repeat queue.
 	CardQueuePreviewRepeat CardQueue = 4
-	CardQueueSuspended     CardQueue = -1
-	CardQueueSchedBuried   CardQueue = -2
-	CardQueueUserBuried    CardQueue = -3
+	// CardQueueSuspended is the suspended queue.
+	CardQueueSuspended CardQueue = -1
+	// CardQueueSchedBuried is the scheduler buried queue.
+	CardQueueSchedBuried CardQueue = -2
+	// CardQueueUserBuried is the user buried queue.
+	CardQueueUserBuried CardQueue = -3
 )
 
+// GetCard gets a card by its ID.
 func (c *Collection) GetCard(id int64) (*Card, error) {
 	return sqlGet(c.db, scanCard, getCardQuery+" WHERE id = ?", id)
 }
 
+// addCard adds a new card to the collection.
 func addCard(e sqlExecer, card *Card) error {
 	id := card.ID
 	if id == 0 {
@@ -85,11 +102,13 @@ func addCard(e sqlExecer, card *Card) error {
 	return err
 }
 
+// ListCardsOptions specifies options for listing cards.
 type ListCardsOptions struct {
 	NoteID *int64
 	DeckID *int64
 }
 
+// ListCards lists cards with optional filtering.
 func (c *Collection) ListCards(opts *ListCardsOptions) iter.Seq2[*Card, error] {
 	var args []any
 	var conds []string
@@ -114,6 +133,7 @@ func (c *Collection) ListCards(opts *ListCardsOptions) iter.Seq2[*Card, error] {
 	return sqlSelectSeq(c.db, scanCard, query, args...)
 }
 
+// scanCard scans a card from a database row.
 func scanCard(_ sqlQueryer, row sqlRow) (*Card, error) {
 	var card Card
 	var mod int64
@@ -148,6 +168,7 @@ func scanCard(_ sqlQueryer, row sqlRow) (*Card, error) {
 	return &card, nil
 }
 
+// deleteCards deletes all cards for a given note.
 func deleteCards(e sqlExecer, noteID int64) error {
 	return sqlExecute(e, deleteCardsQuery, noteID)
 }

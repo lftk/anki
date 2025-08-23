@@ -1,3 +1,5 @@
+// This file contains the SQL queries used by the anki package.
+
 package anki
 
 import (

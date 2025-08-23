@@ -8,6 +8,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// DeckConfig represents a deck configuration in Anki.
 type DeckConfig struct {
 	ID       int64
 	Name     string
@@ -16,6 +17,7 @@ type DeckConfig struct {
 	Config   *pb.DeckConfig
 }
 
+// DefaultDeckConfig returns the default deck configuration.
 func DefaultDeckConfig() *pb.DeckConfig {
 	return &pb.DeckConfig{
 		LearnSteps:                      nil,
@@ -65,6 +67,7 @@ func DefaultDeckConfig() *pb.DeckConfig {
 	}
 }
 
+// AddDeckConfig adds a new deck configuration to the collection.
 func (c *Collection) AddDeckConfig(config *DeckConfig) error {
 	id := config.ID
 	if id == 0 {
@@ -90,20 +93,25 @@ func (c *Collection) AddDeckConfig(config *DeckConfig) error {
 	return err
 }
 
+// GetDeckConfig gets a deck configuration by its ID.
 func (c *Collection) GetDeckConfig(id int64) (*DeckConfig, error) {
 	return sqlGet(c.db, scanDeckConfig, getDeckConfigQuery+" WHERE id = ?", id)
 }
 
+// DeleteDeckConfig deletes a deck configuration by its ID.
 func (c *Collection) DeleteDeckConfig(id int64) error {
 	return sqlExecute(c.db, deleteDeckConfigQuery, id)
 }
 
+// ListDeckConfigsOptions specifies options for listing deck configurations.
 type ListDeckConfigsOptions struct{}
 
+// ListDeckConfigs lists all deck configurations.
 func (c *Collection) ListDeckConfigs(*ListDeckConfigsOptions) iter.Seq2[*DeckConfig, error] {
 	return sqlSelectSeq(c.db, scanDeckConfig, getDeckConfigQuery)
 }
 
+// scanDeckConfig scans a deck configuration from a database row.
 func scanDeckConfig(_ sqlQueryer, row sqlRow) (*DeckConfig, error) {
 	var c DeckConfig
 	var mod int64

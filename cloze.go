@@ -5,8 +5,10 @@ import (
 	"strconv"
 )
 
+// clozeNumberRe is a regular expression to find cloze numbers in a string.
 var clozeNumberRe = regexp.MustCompile(`\{\{c(\d+)::`)
 
+// clozeNumberInFields extracts all unique cloze numbers from a slice of strings (fields).
 func clozeNumberInFields(fields []string) ([]int64, error) {
 	seen := make(map[int64]struct{})
 	ords := make([]int64, 0, len(fields))

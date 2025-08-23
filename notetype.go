@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// Notetype represents a notetype in Anki.
 type Notetype struct {
 	ID        int64
 	Name      string
@@ -19,12 +20,14 @@ type Notetype struct {
 	Config    *pb.NotetypeConfig
 }
 
+// Field represents a field in a notetype.
 type Field struct {
 	Ordinal int
 	Name    string
 	Config  *pb.FieldConfig
 }
 
+// Template represents a template in a notetype.
 type Template struct {
 	Ordinal  int
 	Name     string
@@ -33,10 +36,12 @@ type Template struct {
 	Config   *pb.TemplateConfig
 }
 
+// GetNotetype gets a notetype by its ID.
 func (c *Collection) GetNotetype(id int64) (*Notetype, error) {
 	return sqlGet(c.db, scanNotetype, getNotetypeQuery+" WHERE id = ?", id)
 }
 
+// AddNotetype adds a new notetype to the collection.
 func (c *Collection) AddNotetype(notetype *Notetype) error {
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		notetype.Modified = time.Now()
@@ -75,6 +80,7 @@ func (c *Collection) AddNotetype(notetype *Notetype) error {
 	})
 }
 
+// UpdateNotetype updates an existing notetype in the collection.
 func (c *Collection) UpdateNotetype(notetype *Notetype) error {
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		notetype.Modified = time.Now()
@@ -120,6 +126,7 @@ func (c *Collection) UpdateNotetype(notetype *Notetype) error {
 	})
 }
 
+// DeleteNotetype deletes a notetype by its ID.
 func (c *Collection) DeleteNotetype(id int64) error {
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		if err := sqlExecute(tx, deleteNotetypeQuery, id); err != nil {
@@ -129,12 +136,15 @@ func (c *Collection) DeleteNotetype(id int64) error {
 	})
 }
 
+// ListNotetypesOptions specifies options for listing notetypes.
 type ListNotetypesOptions struct{}
 
+// ListNotetypes lists all notetypes.
 func (c *Collection) ListNotetypes(opts *ListNotetypesOptions) iter.Seq2[*Notetype, error] {
 	return sqlSelectSeq(c.db, scanNotetype, getNotetypeQuery)
 }
 
+// addField adds a field to a notetype.
 func addField(tx *sql.Tx, notetypeID int64, field *Field) error {
 	config, err := proto.Marshal(field.Config)
 	if err != nil {
@@ -143,6 +153,7 @@ func addField(tx *sql.Tx, notetypeID int64, field *Field) error {
 	return sqlExecute(tx, addFieldQuery, notetypeID, field.Ordinal, field.Name, config)
 }
 
+// listFields lists all fields for a notetype.
 func listFields(q sqlQueryer, notetypeID int64) ([]*Field, error) {
 	fn := func(_ sqlQueryer, row sqlRow) (*Field, error) {
 		var f Field
@@ -159,6 +170,7 @@ func listFields(q sqlQueryer, notetypeID int64) ([]*Field, error) {
 	return sqlSelect(q, fn, listFieldsQuery, notetypeID)
 }
 
+// addTemplate adds a template to a notetype.
 func addTemplate(tx *sql.Tx, notetypeID int64, template *Template) error {
 	config, err := proto.Marshal(template.Config)
 	if err != nil {
@@ -176,6 +188,7 @@ func addTemplate(tx *sql.Tx, notetypeID int64, template *Template) error {
 	return sqlExecute(tx, addTemplateQuery, args...)
 }
 
+// listTemplates lists all templates for a notetype.
 func listTemplates(q sqlQueryer, notetypeID int64) ([]*Template, error) {
 	fn := func(_ sqlQueryer, row sqlRow) (*Template, error) {
 		var t Template
@@ -194,6 +207,7 @@ func listTemplates(q sqlQueryer, notetypeID int64) ([]*Template, error) {
 	return sqlSelect(q, fn, listTemplatesQuery, notetypeID)
 }
 
+// scanNotetype scans a notetype from a database row.
 func scanNotetype(q sqlQueryer, row sqlRow) (*Notetype, error) {
 	var nt Notetype
 	var mod int64

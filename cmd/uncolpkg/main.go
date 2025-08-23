@@ -1,3 +1,4 @@
+// This program unpacks a .colpkg file into a collection directory.
 package main
 
 import (
@@ -33,6 +34,7 @@ func main() {
 	}
 }
 
+// unpack unpacks the .colpkg file at path into a directory named output.
 func unpack(path, output string) error {
 	wd, err := os.Getwd()
 	if err != nil {

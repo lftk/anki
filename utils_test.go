@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// TestTimeZero tests the timeZero function.
 func TestTimeZero(t *testing.T) {
 	got := timeZero()
 	if got.Unix() != 0 {
@@ -12,6 +13,7 @@ func TestTimeZero(t *testing.T) {
 	}
 }
 
+// TestTimeUnix tests the timeUnix function.
 func TestTimeUnix(t *testing.T) {
 	tests := []struct {
 		name string

@@ -7,6 +7,7 @@ import (
 	"github.com/klauspost/compress/zstd"
 )
 
+// zipOpen opens a file from a zip archive, with optional zstd decompression.
 func zipOpen(r *zip.Reader, name string, dcomp bool) (io.ReadCloser, error) {
 	f, err := r.Open(name)
 	if err != nil {
@@ -22,6 +23,7 @@ func zipOpen(r *zip.Reader, name string, dcomp bool) (io.ReadCloser, error) {
 	return f, nil
 }
 
+// zipCreate creates a file in a zip archive, with optional zstd compression.
 func zipCreate(w *zip.Writer, name string, comp bool) (io.WriteCloser, error) {
 	zw, err := w.Create(name)
 	if err != nil {
@@ -33,12 +35,14 @@ func zipCreate(w *zip.Writer, name string, comp bool) (io.WriteCloser, error) {
 	return nopWriteCloser{zw}, nil
 }
 
+// nopWriteCloser is a no-op WriteCloser.
 type nopWriteCloser struct {
 	io.Writer
 }
 
 func (nopWriteCloser) Close() error { return nil }
 
+// zipLookup looks up a file in a zip archive.
 func zipLookup(r *zip.Reader, name string) (*zip.File, bool) {
 	for _, f := range r.File {
 		if f.Name == name {
@@ -48,6 +52,7 @@ func zipLookup(r *zip.Reader, name string) (*zip.File, bool) {
 	return nil, false
 }
 
+// zipReadAll reads all content from a file in a zip archive.
 func zipReadAll(r *zip.Reader, name string, dcomp bool) ([]byte, error) {
 	f, err := zipOpen(r, name, dcomp)
 	if err != nil {
@@ -58,6 +63,7 @@ func zipReadAll(r *zip.Reader, name string, dcomp bool) ([]byte, error) {
 	return io.ReadAll(f)
 }
 
+// zipWrite writes data to a file in a zip archive.
 func zipWrite(w *zip.Writer, name string, comp bool, data []byte) error {
 	zw, err := zipCreate(w, name, comp)
 	if err != nil {

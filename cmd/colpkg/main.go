@@ -1,3 +1,4 @@
+// This program packages a collection directory into a .colpkg file.
 package main
 
 import (
@@ -30,6 +31,7 @@ func main() {
 	}
 }
 
+// pack packages the collection in dir into a .colpkg file named output.
 func pack(dir, output string) error {
 	if !strings.HasSuffix(output, ".colpkg") {
 		output += ".colpkg"

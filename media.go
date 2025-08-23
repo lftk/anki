@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 )
 
+// GetMedia gets a media file by name.
 func (c *Collection) GetMedia(name string) (Media, error) {
 	path := c.mediaPath(name)
 	if _, err := os.Stat(path); err != nil {
@@ -16,6 +17,7 @@ func (c *Collection) GetMedia(name string) (Media, error) {
 	return &media{name: name, path: path}, nil
 }
 
+// OpenMedia opens a media file for reading.
 func (c *Collection) OpenMedia(name string) (io.ReadCloser, error) {
 	m, err := c.GetMedia(name)
 	if err != nil {
@@ -24,10 +26,12 @@ func (c *Collection) OpenMedia(name string) (io.ReadCloser, error) {
 	return m.Open()
 }
 
+// AddMedia adds a media file from a path.
 func (c *Collection) AddMedia(name, path string) error {
 	return c.CopyMedia(&media{name: name, path: path})
 }
 
+// WriteMedia writes content to a media file.
 func (c *Collection) WriteMedia(name string, content []byte) error {
 	w, err := c.CreateMedia(name)
 	if err != nil {
@@ -39,6 +43,7 @@ func (c *Collection) WriteMedia(name string, content []byte) error {
 	return err
 }
 
+// CopyMedia copies a media file to the collection.
 func (c *Collection) CopyMedia(media Media) error {
 	r, err := media.Open()
 	if err != nil {
@@ -56,6 +61,7 @@ func (c *Collection) CopyMedia(media Media) error {
 	return err
 }
 
+// CreateMedia creates a new media file and returns a writer.
 func (c *Collection) CreateMedia(name string) (io.WriteCloser, error) {
 	if err := os.MkdirAll(c.mediaDir(), 0755); err != nil {
 		return nil, err
@@ -68,6 +74,7 @@ func (c *Collection) CreateMedia(name string) (io.WriteCloser, error) {
 	return &mediaWriteCloser{File: f, path: path}, nil
 }
 
+// mediaWriteCloser is a writer that removes the file if an error occurs.
 type mediaWriteCloser struct {
 	*os.File
 	path string
@@ -90,12 +97,15 @@ func (m *mediaWriteCloser) Close() error {
 	return err
 }
 
+// DeleteMedia deletes a media file.
 func (c *Collection) DeleteMedia(name string) error {
 	return os.Remove(c.mediaPath(name))
 }
 
+// ListMediaOptions specifies options for listing media files.
 type ListMediaOptions struct{}
 
+// ListMedia lists all media files.
 func (c *Collection) ListMedia(*ListMediaOptions) iter.Seq2[Media, error] {
 	dir := c.mediaDir()
 	return func(yield func(Media, error) bool) {
@@ -120,19 +130,23 @@ func (c *Collection) ListMedia(*ListMediaOptions) iter.Seq2[Media, error] {
 	}
 }
 
+// mediaDir returns the path to the media directory.
 func (c *Collection) mediaDir() string {
 	return mediaDir(c.dir)
 }
 
+// mediaPath returns the path to a media file.
 func (c *Collection) mediaPath(name string) string {
 	return filepath.Join(c.mediaDir(), name)
 }
 
+// Media is an interface for a media file.
 type Media interface {
 	Name() string
 	Open() (io.ReadCloser, error)
 }
 
+// media implements the Media interface.
 type media struct {
 	name string
 	path string

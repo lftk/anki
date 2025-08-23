@@ -9,6 +9,8 @@ import (
 	"github.com/lftk/anki/pb"
 )
 
+// generateCards generates cards for a given note.
+// It takes a deckID, a note, and a notetype and returns a sequence of cards.
 func generateCards(deckID int64, note *Note, notetype *Notetype) iter.Seq2[*Card, error] {
 	return func(yield func(*Card, error) bool) {
 		cards, err := newCardsRequired(deckID, note, notetype)
@@ -33,6 +35,7 @@ func generateCards(deckID int64, note *Note, notetype *Notetype) iter.Seq2[*Card
 	}
 }
 
+// newCardsRequired determines which cards need to be generated for a note based on the notetype.
 func newCardsRequired(deckID int64, note *Note, notetype *Notetype) ([]*cardToGenerate, error) {
 	switch notetype.Config.Kind {
 	case pb.NotetypeConfig_KIND_NORMAL:
@@ -44,6 +47,8 @@ func newCardsRequired(deckID int64, note *Note, notetype *Notetype) ([]*cardToGe
 	}
 }
 
+// newCardsRequiredNormal handles card generation for normal notetypes.
+// It checks which templates render to a non-empty card and creates a card for each.
 func newCardsRequiredNormal(deckID int64, note *Note, notetype *Notetype) ([]*cardToGenerate, error) {
 	fields := nonemptyFields(note, notetype)
 	cards := make([]*cardToGenerate, 0, len(notetype.Templates))
@@ -68,6 +73,7 @@ func newCardsRequiredNormal(deckID int64, note *Note, notetype *Notetype) ([]*ca
 	return cards, nil
 }
 
+// nonemptyFields returns a list of field names that are not empty for a given note.
 func nonemptyFields(note *Note, notetype *Notetype) []string {
 	fields := make([]string, 0, len(note.Fields))
 	for ord, field := range note.Fields {
@@ -90,6 +96,8 @@ func fieldIsEmpty(text string) bool {
 	return fieldIsEmptyRe.MatchString(text)
 }
 
+// newCardsRequiredCloze handles card generation for cloze notetypes.
+// It finds all the cloze deletions in the note's fields and creates a card for each.
 func newCardsRequiredCloze(deckID int64, note *Note) ([]*cardToGenerate, error) {
 	ords, err := clozeNumberInFields(note.Fields)
 	if err != nil {
@@ -107,6 +115,7 @@ func newCardsRequiredCloze(deckID int64, note *Note) ([]*cardToGenerate, error) 
 	return cards, nil
 }
 
+// cardToGenerate is a struct that holds information about a card to be generated.
 type cardToGenerate struct {
 	Ordinal int64
 	DeckID  int64

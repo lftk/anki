@@ -16,6 +16,7 @@ func init() {
 	})
 }
 
+// unicase is a custom collation that compares strings case-insensitively.
 func unicase(s1, s2 string) int {
 	return strings.Compare(
 		strings.Map(unicode.ToLower, s1),
@@ -23,6 +24,7 @@ func unicase(s1, s2 string) int {
 	)
 }
 
+// sqlite3Open opens a new database connection using the custom driver.
 func sqlite3Open(dataSourceName string) (*sql.DB, error) {
 	return sql.Open("sqlite3_ext", dataSourceName)
 }
