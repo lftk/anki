@@ -10,7 +10,7 @@ type Tag struct {
 	Expanded bool
 }
 
-func (c *Collection) AddTag(tag *Tag) error {
+func (c *Collection) SetTag(tag *Tag) error {
 	return sqlExecute(c.db, setTagQuery, tag.Name, tag.USN, !tag.Expanded)
 }
 
@@ -24,7 +24,7 @@ func (c *Collection) GetTag(name string) (*Tag, error) {
 
 type ListTagsOptions struct{}
 
-func (c *Collection) ListTags(opts *ListTagsOptions) iter.Seq2[*Tag, error] {
+func (c *Collection) ListTags(*ListTagsOptions) iter.Seq2[*Tag, error] {
 	return sqlSelectSeq(c.db, scanTag, getTagQuery)
 }
 

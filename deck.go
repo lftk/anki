@@ -40,7 +40,7 @@ func (c *Collection) GetDeck(id int64) (*Deck, error) {
 
 type ListDecksOptions struct{}
 
-func (c *Collection) ListDecks(opts *ListDecksOptions) iter.Seq2[*Deck, error] {
+func (c *Collection) ListDecks(*ListDecksOptions) iter.Seq2[*Deck, error] {
 	return sqlSelectSeq(c.db, scanDeck, getDeckQuery)
 }
 

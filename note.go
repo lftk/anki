@@ -7,12 +7,8 @@ import (
 	"fmt"
 	"iter"
 	"regexp"
-	"slices"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
-	"github.com/lftk/anki/pb"
 )
 
 type Note struct {
@@ -99,11 +95,11 @@ func (c *Collection) ListNotes(opts *ListNotesOptions) iter.Seq2[*Note, error] {
 func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error {
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		if note.GUID == "" {
-			var err error
-			note.GUID, err = randomGUID()
+			guid, err := randomGUID()
 			if err != nil {
 				return err
 			}
+			note.GUID = guid
 		}
 		note.Modified = time.Now()
 		note.USN = -1
@@ -137,17 +133,14 @@ func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error
 			return err
 		}
 
-		cards, err := newCardsRequired(deckID, note, notetype)
-		if err != nil {
-			return err
-		}
-
-		for _, card := range cards {
+		for card, err := range generateCards(deckID, note, notetype) {
+			if err != nil {
+				return err
+			}
 			if err = addCard(tx, card); err != nil {
 				return err
 			}
 		}
-
 		return nil
 	})
 }
@@ -254,14 +247,6 @@ func scanNote(_ sqlQueryer, row sqlRow) (*Note, error) {
 	return &note, nil
 }
 
-func randomGUID() (string, error) {
-	u, err := uuid.NewRandom()
-	if err != nil {
-		return "", err
-	}
-	return u.String(), nil
-}
-
 func joinTags(tags []string) string {
 	if len(tags) == 0 {
 		return ""
@@ -270,7 +255,6 @@ func joinTags(tags []string) string {
 }
 
 func splitTags(tags string) []string {
-	// TODO: prefix and suffix spaces
 	return strings.FieldsFunc(tags, isTagSeparator)
 }
 
@@ -286,86 +270,4 @@ func joinFields(fields []string) string {
 
 func splitFields(fields string) []string {
 	return strings.Split(fields, fieldSeparator)
-}
-
-func newCardsRequired(deckID int64, note *Note, notetype *Notetype) ([]*Card, error) {
-	switch notetype.Config.Kind {
-	case pb.NotetypeConfig_KIND_NORMAL:
-		return newCardsRequiredNormal(deckID, note, notetype)
-	case pb.NotetypeConfig_KIND_CLOZE:
-		return newCardsRequiredCloze(deckID, note)
-	default:
-		return nil, fmt.Errorf("invalid or unsupported notetype kind: %s", notetype.Config.Kind)
-	}
-}
-
-func newCardsRequiredNormal(deckID int64, note *Note, notetype *Notetype) ([]*Card, error) {
-	fields := nonemptyFields(note, notetype)
-	cards := make([]*Card, 0, len(notetype.Templates))
-	for ord, template := range notetype.Templates {
-		ok, err := rendersTemplate(template, fields)
-		if err != nil {
-			return nil, err
-		}
-		if ok {
-			targetDeckID := template.Config.TargetDeckId
-			if targetDeckID == 0 {
-				targetDeckID = deckID
-			}
-			card := &Card{
-				NoteID:   note.ID,
-				DeckID:   targetDeckID,
-				Ordinal:  int64(ord),
-				Modified: timeZero(),
-				USN:      -1,
-				Type:     CardTypeNew,
-				Queue:    CardQueueNew,
-			}
-			cards = append(cards, card)
-		}
-	}
-	return cards, nil
-}
-
-func nonemptyFields(note *Note, notetype *Notetype) []string {
-	fields := make([]string, 0, len(note.Fields))
-	for ord, field := range note.Fields {
-		if !fieldIsEmpty(field) {
-			fn := func(f *Field) bool {
-				return f.Ordinal == ord
-			}
-			if i := slices.IndexFunc(notetype.Fields, fn); i != -1 {
-				fields = append(fields, notetype.Fields[i].Name)
-			}
-		}
-	}
-	return fields
-}
-
-var fieldIsEmptyRe = regexp.MustCompile(`(?i)^(?:[\s]|</?(?:br|div)\s*/?>)*$`)
-
-// fieldIsEmpty returns true if the provided text contains only whitespace and/or empty BR/DIV tags.
-func fieldIsEmpty(text string) bool {
-	return fieldIsEmptyRe.MatchString(text)
-}
-
-func newCardsRequiredCloze(deckID int64, note *Note) ([]*Card, error) {
-	set, err := clozeNumberInFields(note.Fields)
-	if err != nil {
-		return nil, err
-	}
-	cards := make([]*Card, 0, len(set))
-	for _, ord := range set {
-		card := &Card{
-			NoteID:   note.ID,
-			DeckID:   deckID,
-			Ordinal:  int64(ord - 1),
-			Modified: timeZero(),
-			USN:      -1,
-			Type:     CardTypeNew,
-			Queue:    CardQueueNew,
-		}
-		cards = append(cards, card)
-	}
-	return cards, nil
 }
