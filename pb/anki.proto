@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/lftk/anki/internal/pb";
+option go_package = "github.com/lftk/anki/pb";
 
 package pb;
 

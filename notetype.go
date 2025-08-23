@@ -5,6 +5,7 @@ import (
 	"iter"
 	"time"
 
+	"github.com/lftk/anki/pb"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -15,13 +16,13 @@ type Notetype struct {
 	USN       int64
 	Fields    []*Field
 	Templates []*Template
-	Config    *NotetypeConfig
+	Config    *pb.NotetypeConfig
 }
 
 type Field struct {
 	Ordinal int
 	Name    string
-	Config  *FieldConfig
+	Config  *pb.FieldConfig
 }
 
 type Template struct {
@@ -29,7 +30,7 @@ type Template struct {
 	Name     string
 	Modified time.Time
 	USN      int64
-	Config   *TemplateConfig
+	Config   *pb.TemplateConfig
 }
 
 func (c *Collection) GetNotetype(id int64) (*Notetype, error) {
@@ -149,7 +150,7 @@ func listFields(q sqlQueryer, notetypeID int64) ([]*Field, error) {
 		if err := row.Scan(&f.Ordinal, &f.Name, &config); err != nil {
 			return nil, err
 		}
-		f.Config = new(FieldConfig)
+		f.Config = new(pb.FieldConfig)
 		if err := proto.Unmarshal(config, f.Config); err != nil {
 			return nil, err
 		}
@@ -184,7 +185,7 @@ func listTemplates(q sqlQueryer, notetypeID int64) ([]*Template, error) {
 			return nil, err
 		}
 		t.Modified = time.Unix(mod, 0)
-		t.Config = new(TemplateConfig)
+		t.Config = new(pb.TemplateConfig)
 		if err := proto.Unmarshal(config, t.Config); err != nil {
 			return nil, err
 		}
@@ -203,7 +204,7 @@ func scanNotetype(q sqlQueryer, row sqlRow) (*Notetype, error) {
 	}
 
 	nt.Modified = time.Unix(mod, 0)
-	nt.Config = new(NotetypeConfig)
+	nt.Config = new(pb.NotetypeConfig)
 	if err = proto.Unmarshal(config, nt.Config); err != nil {
 		return nil, err
 	}

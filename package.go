@@ -10,9 +10,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/lftk/anki/pb"
 	"google.golang.org/protobuf/proto"
-
-	"github.com/lftk/anki/internal/pb"
 )
 
 func Pack(w *zip.Writer, dir string) error {

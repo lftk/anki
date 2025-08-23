@@ -12,8 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-
-	"github.com/lftk/anki/internal/pb"
+	"github.com/lftk/anki/pb"
 )
 
 type Note struct {
