@@ -94,7 +94,9 @@ func (c *Collection) DeleteMedia(name string) error {
 	return os.Remove(c.mediaPath(name))
 }
 
-func (c *Collection) ListMedia() iter.Seq2[Media, error] {
+type ListMediaOptions struct{}
+
+func (c *Collection) ListMedia(*ListMediaOptions) iter.Seq2[Media, error] {
 	dir := c.mediaDir()
 	return func(yield func(Media, error) bool) {
 		fn := func(path string, d fs.DirEntry, err error) error {
