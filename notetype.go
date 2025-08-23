@@ -37,8 +37,6 @@ func (c *Collection) GetNotetype(id int64) (*Notetype, error) {
 }
 
 func (c *Collection) AddNotetype(notetype *Notetype) error {
-	const query = `INSERT INTO notetypes (id, name, mtime_secs, usn, config) VALUES (?, ?, ?, ?, ?)`
-
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		notetype.Modified = time.Now()
 		notetype.USN = -1
@@ -55,7 +53,7 @@ func (c *Collection) AddNotetype(notetype *Notetype) error {
 			notetype.USN,
 			config,
 		}
-		if err = sqlExecute(tx, query, args...); err != nil {
+		if err = sqlExecute(tx, addNotetypeQuery, args...); err != nil {
 			return err
 		}
 
@@ -77,8 +75,6 @@ func (c *Collection) AddNotetype(notetype *Notetype) error {
 }
 
 func (c *Collection) UpdateNotetype(notetype *Notetype) error {
-	const query = `UPDATE notetypes SET name = ?, mtime_secs = ?, usn = ?, config = ? WHERE id = ?`
-
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		notetype.Modified = time.Now()
 		notetype.USN = -1
@@ -95,17 +91,15 @@ func (c *Collection) UpdateNotetype(notetype *Notetype) error {
 			config,
 			notetype.ID,
 		}
-		if err = sqlExecute(tx, query, args...); err != nil {
+		if err = sqlExecute(tx, updateNotetypeQuery, args...); err != nil {
 			return err
 		}
 
-		for _, query := range []string{
-			`DELETE FROM fields WHERE ntid = ?`,
-			`DELETE FROM templates WHERE ntid = ?`,
-		} {
-			if err = sqlExecute(tx, query, notetype.ID); err != nil {
-				return err
-			}
+		if err = sqlExecute(tx, deleteFieldsQuery, notetype.ID); err != nil {
+			return err
+		}
+		if err = sqlExecute(tx, deleteTemplatesQuery, notetype.ID); err != nil {
+			return err
 		}
 
 		for _, f := range notetype.Fields {
@@ -126,10 +120,8 @@ func (c *Collection) UpdateNotetype(notetype *Notetype) error {
 }
 
 func (c *Collection) DeleteNotetype(id int64) error {
-	const query = `DELETE FROM notetypes WHERE id = ?`
-
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
-		if err := sqlExecute(tx, query, id); err != nil {
+		if err := sqlExecute(tx, deleteNotetypeQuery, id); err != nil {
 			return err
 		}
 		return deleteNotes(tx, id)
@@ -143,18 +135,14 @@ func (c *Collection) ListNotetypes(opts *ListNotetypesOptions) iter.Seq2[*Notety
 }
 
 func addField(tx *sql.Tx, notetypeID int64, field *Field) error {
-	const query = `INSERT INTO fields (ntid, ord, name, config) VALUES (?, ?, ?, ?)`
-
 	config, err := proto.Marshal(field.Config)
 	if err != nil {
 		return err
 	}
-	return sqlExecute(tx, query, notetypeID, field.Ordinal, field.Name, config)
+	return sqlExecute(tx, addFieldQuery, notetypeID, field.Ordinal, field.Name, config)
 }
 
 func listFields(q sqlQueryer, notetypeID int64) ([]*Field, error) {
-	const query = `SELECT ord, name, config FROM fields WHERE ntid = ? ORDER BY ord`
-
 	fn := func(_ sqlQueryer, row sqlRow) (*Field, error) {
 		var f Field
 		var config []byte
@@ -167,12 +155,10 @@ func listFields(q sqlQueryer, notetypeID int64) ([]*Field, error) {
 		}
 		return &f, nil
 	}
-	return sqlSelect(q, fn, query, notetypeID)
+	return sqlSelect(q, fn, listFieldsQuery, notetypeID)
 }
 
 func addTemplate(tx *sql.Tx, notetypeID int64, template *Template) error {
-	const query = `INSERT INTO templates (ntid, ord, name, mtime_secs, usn, config) VALUES (?, ?, ?, ?, ?, ?)`
-
 	config, err := proto.Marshal(template.Config)
 	if err != nil {
 		return err
@@ -186,12 +172,10 @@ func addTemplate(tx *sql.Tx, notetypeID int64, template *Template) error {
 		template.USN,
 		config,
 	}
-	return sqlExecute(tx, query, args...)
+	return sqlExecute(tx, addTemplateQuery, args...)
 }
 
 func listTemplates(q sqlQueryer, notetypeID int64) ([]*Template, error) {
-	const query = `SELECT ord, name, mtime_secs, usn, config FROM templates WHERE ntid = ? ORDER BY ord`
-
 	fn := func(_ sqlQueryer, row sqlRow) (*Template, error) {
 		var t Template
 		var mod int64
@@ -206,7 +190,7 @@ func listTemplates(q sqlQueryer, notetypeID int64) ([]*Template, error) {
 		}
 		return &t, nil
 	}
-	return sqlSelect(q, fn, query, notetypeID)
+	return sqlSelect(q, fn, listTemplatesQuery, notetypeID)
 }
 
 func scanNotetype(q sqlQueryer, row sqlRow) (*Notetype, error) {

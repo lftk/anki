@@ -56,9 +56,7 @@ func (c *Collection) DeleteNote(id int64) error {
 }
 
 func deleteNotes(e sqlExt, notetypeID int64) error {
-	const query = `SELECT id FROM notes WHERE mid = ?`
-
-	for id, err := range sqlSelectSeq(e, scanValue[int64], query, notetypeID) {
+	for id, err := range sqlSelectSeq(e, scanValue[int64], listNoteIDsQuery, notetypeID) {
 		if err != nil {
 			return err
 		}
@@ -70,9 +68,7 @@ func deleteNotes(e sqlExt, notetypeID int64) error {
 }
 
 func deleteNote(e sqlExecer, noteID int64) error {
-	const query = `DELETE FROM notes WHERE id = ?`
-
-	if err := sqlExecute(e, query, noteID); err != nil {
+	if err := sqlExecute(e, deleteNoteQuery, noteID); err != nil {
 		return err
 	}
 	return deleteCards(e, noteID)
@@ -158,8 +154,6 @@ func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error
 }
 
 func (c *Collection) updateNote(note *Note, notetype *Notetype) error {
-	const query = `UPDATE notes SET guid = ?, mid = ?, mod = ?, usn = ?, tags = ?, flds = ?, sfld = ?, csum = ?, flags = ?, data = ? WHERE id = ?`
-
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		note.Modified = time.Now()
 		note.USN = -1
@@ -183,7 +177,7 @@ func (c *Collection) updateNote(note *Note, notetype *Notetype) error {
 			note.Data,
 			note.ID,
 		}
-		return sqlExecute(tx, query, args...)
+		return sqlExecute(tx, updateNoteQuery, args...)
 	})
 }
 

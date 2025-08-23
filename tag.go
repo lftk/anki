@@ -11,18 +11,11 @@ type Tag struct {
 }
 
 func (c *Collection) SetTag(tag *Tag) error {
-	const query = `
-INSERT
-  OR REPLACE INTO tags (tag, usn, collapsed)
-VALUES (?, ?, ?)	
-`
-	return sqlExecute(c.db, query, tag.Name, tag.USN, !tag.Expanded)
+	return sqlExecute(c.db, setTagQuery, tag.Name, tag.USN, !tag.Expanded)
 }
 
 func (c *Collection) DeleteTag(name string) error {
-	const query = `DELETE FROM tags WHERE tag = ?`
-
-	return sqlExecute(c.db, query, name)
+	return sqlExecute(c.db, deleteTagQuery, name)
 }
 
 func (c *Collection) GetTag(name string) (*Tag, error) {
