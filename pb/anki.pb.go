@@ -625,6 +625,76 @@ func (DeckConfig_QuestionAction) EnumDescriptor() ([]byte, []int) {
 	return file_pb_anki_proto_rawDescGZIP(), []int{4, 7}
 }
 
+type DeckFiltered_SearchTerm_Order int32
+
+const (
+	DeckFiltered_SearchTerm_OLDEST_REVIEWED_FIRST     DeckFiltered_SearchTerm_Order = 0
+	DeckFiltered_SearchTerm_RANDOM                    DeckFiltered_SearchTerm_Order = 1
+	DeckFiltered_SearchTerm_INTERVALS_ASCENDING       DeckFiltered_SearchTerm_Order = 2
+	DeckFiltered_SearchTerm_INTERVALS_DESCENDING      DeckFiltered_SearchTerm_Order = 3
+	DeckFiltered_SearchTerm_LAPSES                    DeckFiltered_SearchTerm_Order = 4
+	DeckFiltered_SearchTerm_ADDED                     DeckFiltered_SearchTerm_Order = 5
+	DeckFiltered_SearchTerm_DUE                       DeckFiltered_SearchTerm_Order = 6
+	DeckFiltered_SearchTerm_REVERSE_ADDED             DeckFiltered_SearchTerm_Order = 7
+	DeckFiltered_SearchTerm_RETRIEVABILITY_ASCENDING  DeckFiltered_SearchTerm_Order = 8
+	DeckFiltered_SearchTerm_RETRIEVABILITY_DESCENDING DeckFiltered_SearchTerm_Order = 9
+)
+
+// Enum value maps for DeckFiltered_SearchTerm_Order.
+var (
+	DeckFiltered_SearchTerm_Order_name = map[int32]string{
+		0: "OLDEST_REVIEWED_FIRST",
+		1: "RANDOM",
+		2: "INTERVALS_ASCENDING",
+		3: "INTERVALS_DESCENDING",
+		4: "LAPSES",
+		5: "ADDED",
+		6: "DUE",
+		7: "REVERSE_ADDED",
+		8: "RETRIEVABILITY_ASCENDING",
+		9: "RETRIEVABILITY_DESCENDING",
+	}
+	DeckFiltered_SearchTerm_Order_value = map[string]int32{
+		"OLDEST_REVIEWED_FIRST":     0,
+		"RANDOM":                    1,
+		"INTERVALS_ASCENDING":       2,
+		"INTERVALS_DESCENDING":      3,
+		"LAPSES":                    4,
+		"ADDED":                     5,
+		"DUE":                       6,
+		"REVERSE_ADDED":             7,
+		"RETRIEVABILITY_ASCENDING":  8,
+		"RETRIEVABILITY_DESCENDING": 9,
+	}
+)
+
+func (x DeckFiltered_SearchTerm_Order) Enum() *DeckFiltered_SearchTerm_Order {
+	p := new(DeckFiltered_SearchTerm_Order)
+	*p = x
+	return p
+}
+
+func (x DeckFiltered_SearchTerm_Order) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeckFiltered_SearchTerm_Order) Descriptor() protoreflect.EnumDescriptor {
+	return file_pb_anki_proto_enumTypes[11].Descriptor()
+}
+
+func (DeckFiltered_SearchTerm_Order) Type() protoreflect.EnumType {
+	return &file_pb_anki_proto_enumTypes[11]
+}
+
+func (x DeckFiltered_SearchTerm_Order) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeckFiltered_SearchTerm_Order.Descriptor instead.
+func (DeckFiltered_SearchTerm_Order) EnumDescriptor() ([]byte, []int) {
+	return file_pb_anki_proto_rawDescGZIP(), []int{7, 0, 0}
+}
+
 type PackageMetadata_Version int32
 
 const (
@@ -661,11 +731,11 @@ func (x PackageMetadata_Version) String() string {
 }
 
 func (PackageMetadata_Version) Descriptor() protoreflect.EnumDescriptor {
-	return file_pb_anki_proto_enumTypes[11].Descriptor()
+	return file_pb_anki_proto_enumTypes[12].Descriptor()
 }
 
 func (PackageMetadata_Version) Type() protoreflect.EnumType {
-	return &file_pb_anki_proto_enumTypes[11]
+	return &file_pb_anki_proto_enumTypes[12]
 }
 
 func (x PackageMetadata_Version) Number() protoreflect.EnumNumber {
@@ -674,7 +744,7 @@ func (x PackageMetadata_Version) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PackageMetadata_Version.Descriptor instead.
 func (PackageMetadata_Version) EnumDescriptor() ([]byte, []int) {
-	return file_pb_anki_proto_rawDescGZIP(), []int{5, 0}
+	return file_pb_anki_proto_rawDescGZIP(), []int{9, 0}
 }
 
 type StockNotetype struct {
@@ -1467,6 +1537,395 @@ func (x *DeckConfig) GetOther() []byte {
 	return nil
 }
 
+type DeckCommon struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	StudyCollapsed      bool                   `protobuf:"varint,1,opt,name=study_collapsed,json=studyCollapsed,proto3" json:"study_collapsed,omitempty"`
+	BrowserCollapsed    bool                   `protobuf:"varint,2,opt,name=browser_collapsed,json=browserCollapsed,proto3" json:"browser_collapsed,omitempty"`
+	LastDayStudied      uint32                 `protobuf:"varint,3,opt,name=last_day_studied,json=lastDayStudied,proto3" json:"last_day_studied,omitempty"`
+	NewStudied          int32                  `protobuf:"varint,4,opt,name=new_studied,json=newStudied,proto3" json:"new_studied,omitempty"`
+	ReviewStudied       int32                  `protobuf:"varint,5,opt,name=review_studied,json=reviewStudied,proto3" json:"review_studied,omitempty"`
+	MillisecondsStudied int32                  `protobuf:"varint,7,opt,name=milliseconds_studied,json=millisecondsStudied,proto3" json:"milliseconds_studied,omitempty"`
+	// previously set in the v1 scheduler,
+	// but not currently used for anything
+	LearningStudied int32  `protobuf:"varint,6,opt,name=learning_studied,json=learningStudied,proto3" json:"learning_studied,omitempty"`
+	Other           []byte `protobuf:"bytes,255,opt,name=other,proto3" json:"other,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *DeckCommon) Reset() {
+	*x = DeckCommon{}
+	mi := &file_pb_anki_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeckCommon) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeckCommon) ProtoMessage() {}
+
+func (x *DeckCommon) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_anki_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeckCommon.ProtoReflect.Descriptor instead.
+func (*DeckCommon) Descriptor() ([]byte, []int) {
+	return file_pb_anki_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *DeckCommon) GetStudyCollapsed() bool {
+	if x != nil {
+		return x.StudyCollapsed
+	}
+	return false
+}
+
+func (x *DeckCommon) GetBrowserCollapsed() bool {
+	if x != nil {
+		return x.BrowserCollapsed
+	}
+	return false
+}
+
+func (x *DeckCommon) GetLastDayStudied() uint32 {
+	if x != nil {
+		return x.LastDayStudied
+	}
+	return 0
+}
+
+func (x *DeckCommon) GetNewStudied() int32 {
+	if x != nil {
+		return x.NewStudied
+	}
+	return 0
+}
+
+func (x *DeckCommon) GetReviewStudied() int32 {
+	if x != nil {
+		return x.ReviewStudied
+	}
+	return 0
+}
+
+func (x *DeckCommon) GetMillisecondsStudied() int32 {
+	if x != nil {
+		return x.MillisecondsStudied
+	}
+	return 0
+}
+
+func (x *DeckCommon) GetLearningStudied() int32 {
+	if x != nil {
+		return x.LearningStudied
+	}
+	return 0
+}
+
+func (x *DeckCommon) GetOther() []byte {
+	if x != nil {
+		return x.Other
+	}
+	return nil
+}
+
+type DeckNormal struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	ConfigId            int64                  `protobuf:"varint,1,opt,name=config_id,json=configId,proto3" json:"config_id,omitempty"`
+	ExtendNew           uint32                 `protobuf:"varint,2,opt,name=extend_new,json=extendNew,proto3" json:"extend_new,omitempty"`
+	ExtendReview        uint32                 `protobuf:"varint,3,opt,name=extend_review,json=extendReview,proto3" json:"extend_review,omitempty"`
+	Description         string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	MarkdownDescription bool                   `protobuf:"varint,5,opt,name=markdown_description,json=markdownDescription,proto3" json:"markdown_description,omitempty"`
+	ReviewLimit         *uint32                `protobuf:"varint,6,opt,name=review_limit,json=reviewLimit,proto3,oneof" json:"review_limit,omitempty"`
+	NewLimit            *uint32                `protobuf:"varint,7,opt,name=new_limit,json=newLimit,proto3,oneof" json:"new_limit,omitempty"`
+	ReviewLimitToday    *DeckNormal_DayLimit   `protobuf:"bytes,8,opt,name=review_limit_today,json=reviewLimitToday,proto3" json:"review_limit_today,omitempty"`
+	NewLimitToday       *DeckNormal_DayLimit   `protobuf:"bytes,9,opt,name=new_limit_today,json=newLimitToday,proto3" json:"new_limit_today,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *DeckNormal) Reset() {
+	*x = DeckNormal{}
+	mi := &file_pb_anki_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeckNormal) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeckNormal) ProtoMessage() {}
+
+func (x *DeckNormal) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_anki_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeckNormal.ProtoReflect.Descriptor instead.
+func (*DeckNormal) Descriptor() ([]byte, []int) {
+	return file_pb_anki_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *DeckNormal) GetConfigId() int64 {
+	if x != nil {
+		return x.ConfigId
+	}
+	return 0
+}
+
+func (x *DeckNormal) GetExtendNew() uint32 {
+	if x != nil {
+		return x.ExtendNew
+	}
+	return 0
+}
+
+func (x *DeckNormal) GetExtendReview() uint32 {
+	if x != nil {
+		return x.ExtendReview
+	}
+	return 0
+}
+
+func (x *DeckNormal) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *DeckNormal) GetMarkdownDescription() bool {
+	if x != nil {
+		return x.MarkdownDescription
+	}
+	return false
+}
+
+func (x *DeckNormal) GetReviewLimit() uint32 {
+	if x != nil && x.ReviewLimit != nil {
+		return *x.ReviewLimit
+	}
+	return 0
+}
+
+func (x *DeckNormal) GetNewLimit() uint32 {
+	if x != nil && x.NewLimit != nil {
+		return *x.NewLimit
+	}
+	return 0
+}
+
+func (x *DeckNormal) GetReviewLimitToday() *DeckNormal_DayLimit {
+	if x != nil {
+		return x.ReviewLimitToday
+	}
+	return nil
+}
+
+func (x *DeckNormal) GetNewLimitToday() *DeckNormal_DayLimit {
+	if x != nil {
+		return x.NewLimitToday
+	}
+	return nil
+}
+
+type DeckFiltered struct {
+	state       protoimpl.MessageState     `protogen:"open.v1"`
+	Reschedule  bool                       `protobuf:"varint,1,opt,name=reschedule,proto3" json:"reschedule,omitempty"`
+	SearchTerms []*DeckFiltered_SearchTerm `protobuf:"bytes,2,rep,name=search_terms,json=searchTerms,proto3" json:"search_terms,omitempty"`
+	// v1 scheduler only
+	Delays []float32 `protobuf:"fixed32,3,rep,packed,name=delays,proto3" json:"delays,omitempty"`
+	// v2 and old v3 scheduler only
+	PreviewDelay uint32 `protobuf:"varint,4,opt,name=preview_delay,json=previewDelay,proto3" json:"preview_delay,omitempty"`
+	// recent v3 scheduler only; 0 means card will be returned
+	PreviewAgainSecs uint32 `protobuf:"varint,7,opt,name=preview_again_secs,json=previewAgainSecs,proto3" json:"preview_again_secs,omitempty"`
+	// recent v3 scheduler only; 0 means card will be returned
+	PreviewHardSecs uint32 `protobuf:"varint,5,opt,name=preview_hard_secs,json=previewHardSecs,proto3" json:"preview_hard_secs,omitempty"`
+	// recent v3 scheduler only; 0 means card will be returned
+	PreviewGoodSecs uint32 `protobuf:"varint,6,opt,name=preview_good_secs,json=previewGoodSecs,proto3" json:"preview_good_secs,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *DeckFiltered) Reset() {
+	*x = DeckFiltered{}
+	mi := &file_pb_anki_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeckFiltered) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeckFiltered) ProtoMessage() {}
+
+func (x *DeckFiltered) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_anki_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeckFiltered.ProtoReflect.Descriptor instead.
+func (*DeckFiltered) Descriptor() ([]byte, []int) {
+	return file_pb_anki_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *DeckFiltered) GetReschedule() bool {
+	if x != nil {
+		return x.Reschedule
+	}
+	return false
+}
+
+func (x *DeckFiltered) GetSearchTerms() []*DeckFiltered_SearchTerm {
+	if x != nil {
+		return x.SearchTerms
+	}
+	return nil
+}
+
+func (x *DeckFiltered) GetDelays() []float32 {
+	if x != nil {
+		return x.Delays
+	}
+	return nil
+}
+
+func (x *DeckFiltered) GetPreviewDelay() uint32 {
+	if x != nil {
+		return x.PreviewDelay
+	}
+	return 0
+}
+
+func (x *DeckFiltered) GetPreviewAgainSecs() uint32 {
+	if x != nil {
+		return x.PreviewAgainSecs
+	}
+	return 0
+}
+
+func (x *DeckFiltered) GetPreviewHardSecs() uint32 {
+	if x != nil {
+		return x.PreviewHardSecs
+	}
+	return 0
+}
+
+func (x *DeckFiltered) GetPreviewGoodSecs() uint32 {
+	if x != nil {
+		return x.PreviewGoodSecs
+	}
+	return 0
+}
+
+type DeckKind struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Types that are valid to be assigned to Kind:
+	//
+	//	*DeckKind_Normal
+	//	*DeckKind_Filtered
+	Kind          isDeckKind_Kind `protobuf_oneof:"kind"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeckKind) Reset() {
+	*x = DeckKind{}
+	mi := &file_pb_anki_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeckKind) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeckKind) ProtoMessage() {}
+
+func (x *DeckKind) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_anki_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeckKind.ProtoReflect.Descriptor instead.
+func (*DeckKind) Descriptor() ([]byte, []int) {
+	return file_pb_anki_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *DeckKind) GetKind() isDeckKind_Kind {
+	if x != nil {
+		return x.Kind
+	}
+	return nil
+}
+
+func (x *DeckKind) GetNormal() *DeckNormal {
+	if x != nil {
+		if x, ok := x.Kind.(*DeckKind_Normal); ok {
+			return x.Normal
+		}
+	}
+	return nil
+}
+
+func (x *DeckKind) GetFiltered() *DeckFiltered {
+	if x != nil {
+		if x, ok := x.Kind.(*DeckKind_Filtered); ok {
+			return x.Filtered
+		}
+	}
+	return nil
+}
+
+type isDeckKind_Kind interface {
+	isDeckKind_Kind()
+}
+
+type DeckKind_Normal struct {
+	Normal *DeckNormal `protobuf:"bytes,1,opt,name=normal,proto3,oneof"`
+}
+
+type DeckKind_Filtered struct {
+	Filtered *DeckFiltered `protobuf:"bytes,2,opt,name=filtered,proto3,oneof"`
+}
+
+func (*DeckKind_Normal) isDeckKind_Kind() {}
+
+func (*DeckKind_Filtered) isDeckKind_Kind() {}
+
 type PackageMetadata struct {
 	state         protoimpl.MessageState  `protogen:"open.v1"`
 	Version       PackageMetadata_Version `protobuf:"varint,1,opt,name=version,proto3,enum=pb.PackageMetadata_Version" json:"version,omitempty"`
@@ -1476,7 +1935,7 @@ type PackageMetadata struct {
 
 func (x *PackageMetadata) Reset() {
 	*x = PackageMetadata{}
-	mi := &file_pb_anki_proto_msgTypes[5]
+	mi := &file_pb_anki_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1488,7 +1947,7 @@ func (x *PackageMetadata) String() string {
 func (*PackageMetadata) ProtoMessage() {}
 
 func (x *PackageMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_pb_anki_proto_msgTypes[5]
+	mi := &file_pb_anki_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1501,7 +1960,7 @@ func (x *PackageMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PackageMetadata.ProtoReflect.Descriptor instead.
 func (*PackageMetadata) Descriptor() ([]byte, []int) {
-	return file_pb_anki_proto_rawDescGZIP(), []int{5}
+	return file_pb_anki_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *PackageMetadata) GetVersion() PackageMetadata_Version {
@@ -1520,7 +1979,7 @@ type MediaEntries struct {
 
 func (x *MediaEntries) Reset() {
 	*x = MediaEntries{}
-	mi := &file_pb_anki_proto_msgTypes[6]
+	mi := &file_pb_anki_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1532,7 +1991,7 @@ func (x *MediaEntries) String() string {
 func (*MediaEntries) ProtoMessage() {}
 
 func (x *MediaEntries) ProtoReflect() protoreflect.Message {
-	mi := &file_pb_anki_proto_msgTypes[6]
+	mi := &file_pb_anki_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1545,7 +2004,7 @@ func (x *MediaEntries) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MediaEntries.ProtoReflect.Descriptor instead.
 func (*MediaEntries) Descriptor() ([]byte, []int) {
-	return file_pb_anki_proto_rawDescGZIP(), []int{6}
+	return file_pb_anki_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *MediaEntries) GetEntries() []*MediaEntries_MediaEntry {
@@ -1566,7 +2025,7 @@ type NotetypeConfig_CardRequirement struct {
 
 func (x *NotetypeConfig_CardRequirement) Reset() {
 	*x = NotetypeConfig_CardRequirement{}
-	mi := &file_pb_anki_proto_msgTypes[7]
+	mi := &file_pb_anki_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1578,7 +2037,7 @@ func (x *NotetypeConfig_CardRequirement) String() string {
 func (*NotetypeConfig_CardRequirement) ProtoMessage() {}
 
 func (x *NotetypeConfig_CardRequirement) ProtoReflect() protoreflect.Message {
-	mi := &file_pb_anki_proto_msgTypes[7]
+	mi := &file_pb_anki_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1615,6 +2074,118 @@ func (x *NotetypeConfig_CardRequirement) GetFieldOrds() []uint32 {
 	return nil
 }
 
+type DeckNormal_DayLimit struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Limit         uint32                 `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	Today         uint32                 `protobuf:"varint,2,opt,name=today,proto3" json:"today,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeckNormal_DayLimit) Reset() {
+	*x = DeckNormal_DayLimit{}
+	mi := &file_pb_anki_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeckNormal_DayLimit) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeckNormal_DayLimit) ProtoMessage() {}
+
+func (x *DeckNormal_DayLimit) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_anki_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeckNormal_DayLimit.ProtoReflect.Descriptor instead.
+func (*DeckNormal_DayLimit) Descriptor() ([]byte, []int) {
+	return file_pb_anki_proto_rawDescGZIP(), []int{6, 0}
+}
+
+func (x *DeckNormal_DayLimit) GetLimit() uint32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *DeckNormal_DayLimit) GetToday() uint32 {
+	if x != nil {
+		return x.Today
+	}
+	return 0
+}
+
+type DeckFiltered_SearchTerm struct {
+	state         protoimpl.MessageState        `protogen:"open.v1"`
+	Search        string                        `protobuf:"bytes,1,opt,name=search,proto3" json:"search,omitempty"`
+	Limit         uint32                        `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Order         DeckFiltered_SearchTerm_Order `protobuf:"varint,3,opt,name=order,proto3,enum=pb.DeckFiltered_SearchTerm_Order" json:"order,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeckFiltered_SearchTerm) Reset() {
+	*x = DeckFiltered_SearchTerm{}
+	mi := &file_pb_anki_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeckFiltered_SearchTerm) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeckFiltered_SearchTerm) ProtoMessage() {}
+
+func (x *DeckFiltered_SearchTerm) ProtoReflect() protoreflect.Message {
+	mi := &file_pb_anki_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeckFiltered_SearchTerm.ProtoReflect.Descriptor instead.
+func (*DeckFiltered_SearchTerm) Descriptor() ([]byte, []int) {
+	return file_pb_anki_proto_rawDescGZIP(), []int{7, 0}
+}
+
+func (x *DeckFiltered_SearchTerm) GetSearch() string {
+	if x != nil {
+		return x.Search
+	}
+	return ""
+}
+
+func (x *DeckFiltered_SearchTerm) GetLimit() uint32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *DeckFiltered_SearchTerm) GetOrder() DeckFiltered_SearchTerm_Order {
+	if x != nil {
+		return x.Order
+	}
+	return DeckFiltered_SearchTerm_OLDEST_REVIEWED_FIRST
+}
+
 type MediaEntries_MediaEntry struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	Name              string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -1627,7 +2198,7 @@ type MediaEntries_MediaEntry struct {
 
 func (x *MediaEntries_MediaEntry) Reset() {
 	*x = MediaEntries_MediaEntry{}
-	mi := &file_pb_anki_proto_msgTypes[8]
+	mi := &file_pb_anki_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1639,7 +2210,7 @@ func (x *MediaEntries_MediaEntry) String() string {
 func (*MediaEntries_MediaEntry) ProtoMessage() {}
 
 func (x *MediaEntries_MediaEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_pb_anki_proto_msgTypes[8]
+	mi := &file_pb_anki_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1652,7 +2223,7 @@ func (x *MediaEntries_MediaEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MediaEntries_MediaEntry.ProtoReflect.Descriptor instead.
 func (*MediaEntries_MediaEntry) Descriptor() ([]byte, []int) {
-	return file_pb_anki_proto_rawDescGZIP(), []int{6, 0}
+	return file_pb_anki_proto_rawDescGZIP(), []int{10, 0}
 }
 
 func (x *MediaEntries_MediaEntry) GetName() string {
@@ -1848,7 +2419,68 @@ const file_pb_anki_proto_rawDesc = "" +
 	"\x1bANSWER_ACTION_SHOW_REMINDER\x10\x04\"T\n" +
 	"\x0eQuestionAction\x12\x1f\n" +
 	"\x1bQUESTION_ACTION_SHOW_ANSWER\x10\x00\x12!\n" +
-	"\x1dQUESTION_ACTION_SHOW_REMINDER\x10\x01J\x04\b\a\x10\tJ\x04\b'\x10(\"\xa8\x01\n" +
+	"\x1dQUESTION_ACTION_SHOW_REMINDER\x10\x01J\x04\b\a\x10\tJ\x04\b'\x10(\"\xcf\x02\n" +
+	"\n" +
+	"DeckCommon\x12'\n" +
+	"\x0fstudy_collapsed\x18\x01 \x01(\bR\x0estudyCollapsed\x12+\n" +
+	"\x11browser_collapsed\x18\x02 \x01(\bR\x10browserCollapsed\x12(\n" +
+	"\x10last_day_studied\x18\x03 \x01(\rR\x0elastDayStudied\x12\x1f\n" +
+	"\vnew_studied\x18\x04 \x01(\x05R\n" +
+	"newStudied\x12%\n" +
+	"\x0ereview_studied\x18\x05 \x01(\x05R\rreviewStudied\x121\n" +
+	"\x14milliseconds_studied\x18\a \x01(\x05R\x13millisecondsStudied\x12)\n" +
+	"\x10learning_studied\x18\x06 \x01(\x05R\x0flearningStudied\x12\x15\n" +
+	"\x05other\x18\xff\x01 \x01(\fR\x05otherJ\x04\b\b\x10\x0e\"\xf1\x03\n" +
+	"\n" +
+	"DeckNormal\x12\x1b\n" +
+	"\tconfig_id\x18\x01 \x01(\x03R\bconfigId\x12\x1d\n" +
+	"\n" +
+	"extend_new\x18\x02 \x01(\rR\textendNew\x12#\n" +
+	"\rextend_review\x18\x03 \x01(\rR\fextendReview\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\x121\n" +
+	"\x14markdown_description\x18\x05 \x01(\bR\x13markdownDescription\x12&\n" +
+	"\freview_limit\x18\x06 \x01(\rH\x00R\vreviewLimit\x88\x01\x01\x12 \n" +
+	"\tnew_limit\x18\a \x01(\rH\x01R\bnewLimit\x88\x01\x01\x12E\n" +
+	"\x12review_limit_today\x18\b \x01(\v2\x17.pb.DeckNormal.DayLimitR\x10reviewLimitToday\x12?\n" +
+	"\x0fnew_limit_today\x18\t \x01(\v2\x17.pb.DeckNormal.DayLimitR\rnewLimitToday\x1a6\n" +
+	"\bDayLimit\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\rR\x05limit\x12\x14\n" +
+	"\x05today\x18\x02 \x01(\rR\x05todayB\x0f\n" +
+	"\r_review_limitB\f\n" +
+	"\n" +
+	"_new_limitJ\x04\b\f\x10\x10\"\xfb\x04\n" +
+	"\fDeckFiltered\x12\x1e\n" +
+	"\n" +
+	"reschedule\x18\x01 \x01(\bR\n" +
+	"reschedule\x12>\n" +
+	"\fsearch_terms\x18\x02 \x03(\v2\x1b.pb.DeckFiltered.SearchTermR\vsearchTerms\x12\x16\n" +
+	"\x06delays\x18\x03 \x03(\x02R\x06delays\x12#\n" +
+	"\rpreview_delay\x18\x04 \x01(\rR\fpreviewDelay\x12,\n" +
+	"\x12preview_again_secs\x18\a \x01(\rR\x10previewAgainSecs\x12*\n" +
+	"\x11preview_hard_secs\x18\x05 \x01(\rR\x0fpreviewHardSecs\x12*\n" +
+	"\x11preview_good_secs\x18\x06 \x01(\rR\x0fpreviewGoodSecs\x1a\xc7\x02\n" +
+	"\n" +
+	"SearchTerm\x12\x16\n" +
+	"\x06search\x18\x01 \x01(\tR\x06search\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\rR\x05limit\x127\n" +
+	"\x05order\x18\x03 \x01(\x0e2!.pb.DeckFiltered.SearchTerm.OrderR\x05order\"\xd1\x01\n" +
+	"\x05Order\x12\x19\n" +
+	"\x15OLDEST_REVIEWED_FIRST\x10\x00\x12\n" +
+	"\n" +
+	"\x06RANDOM\x10\x01\x12\x17\n" +
+	"\x13INTERVALS_ASCENDING\x10\x02\x12\x18\n" +
+	"\x14INTERVALS_DESCENDING\x10\x03\x12\n" +
+	"\n" +
+	"\x06LAPSES\x10\x04\x12\t\n" +
+	"\x05ADDED\x10\x05\x12\a\n" +
+	"\x03DUE\x10\x06\x12\x11\n" +
+	"\rREVERSE_ADDED\x10\a\x12\x1c\n" +
+	"\x18RETRIEVABILITY_ASCENDING\x10\b\x12\x1d\n" +
+	"\x19RETRIEVABILITY_DESCENDING\x10\t\"l\n" +
+	"\bDeckKind\x12(\n" +
+	"\x06normal\x18\x01 \x01(\v2\x0e.pb.DeckNormalH\x00R\x06normal\x12.\n" +
+	"\bfiltered\x18\x02 \x01(\v2\x10.pb.DeckFilteredH\x00R\bfilteredB\x06\n" +
+	"\x04kind\"\xa8\x01\n" +
 	"\x0fPackageMetadata\x125\n" +
 	"\aversion\x18\x01 \x01(\x0e2\x1b.pb.PackageMetadata.VersionR\aversion\"^\n" +
 	"\aVersion\x12\x13\n" +
@@ -1878,8 +2510,8 @@ func file_pb_anki_proto_rawDescGZIP() []byte {
 	return file_pb_anki_proto_rawDescData
 }
 
-var file_pb_anki_proto_enumTypes = make([]protoimpl.EnumInfo, 12)
-var file_pb_anki_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_pb_anki_proto_enumTypes = make([]protoimpl.EnumInfo, 13)
+var file_pb_anki_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_pb_anki_proto_goTypes = []any{
 	(StockNotetype_OriginalStockKind)(0),     // 0: pb.StockNotetype.OriginalStockKind
 	(NotetypeConfig_Kind)(0),                 // 1: pb.NotetypeConfig.Kind
@@ -1892,20 +2524,27 @@ var file_pb_anki_proto_goTypes = []any{
 	(DeckConfig_LeechAction)(0),              // 8: pb.DeckConfig.LeechAction
 	(DeckConfig_AnswerAction)(0),             // 9: pb.DeckConfig.AnswerAction
 	(DeckConfig_QuestionAction)(0),           // 10: pb.DeckConfig.QuestionAction
-	(PackageMetadata_Version)(0),             // 11: pb.PackageMetadata.Version
-	(*StockNotetype)(nil),                    // 12: pb.StockNotetype
-	(*NotetypeConfig)(nil),                   // 13: pb.NotetypeConfig
-	(*FieldConfig)(nil),                      // 14: pb.FieldConfig
-	(*TemplateConfig)(nil),                   // 15: pb.TemplateConfig
-	(*DeckConfig)(nil),                       // 16: pb.DeckConfig
-	(*PackageMetadata)(nil),                  // 17: pb.PackageMetadata
-	(*MediaEntries)(nil),                     // 18: pb.MediaEntries
-	(*NotetypeConfig_CardRequirement)(nil),   // 19: pb.NotetypeConfig.CardRequirement
-	(*MediaEntries_MediaEntry)(nil),          // 20: pb.MediaEntries.MediaEntry
+	(DeckFiltered_SearchTerm_Order)(0),       // 11: pb.DeckFiltered.SearchTerm.Order
+	(PackageMetadata_Version)(0),             // 12: pb.PackageMetadata.Version
+	(*StockNotetype)(nil),                    // 13: pb.StockNotetype
+	(*NotetypeConfig)(nil),                   // 14: pb.NotetypeConfig
+	(*FieldConfig)(nil),                      // 15: pb.FieldConfig
+	(*TemplateConfig)(nil),                   // 16: pb.TemplateConfig
+	(*DeckConfig)(nil),                       // 17: pb.DeckConfig
+	(*DeckCommon)(nil),                       // 18: pb.DeckCommon
+	(*DeckNormal)(nil),                       // 19: pb.DeckNormal
+	(*DeckFiltered)(nil),                     // 20: pb.DeckFiltered
+	(*DeckKind)(nil),                         // 21: pb.DeckKind
+	(*PackageMetadata)(nil),                  // 22: pb.PackageMetadata
+	(*MediaEntries)(nil),                     // 23: pb.MediaEntries
+	(*NotetypeConfig_CardRequirement)(nil),   // 24: pb.NotetypeConfig.CardRequirement
+	(*DeckNormal_DayLimit)(nil),              // 25: pb.DeckNormal.DayLimit
+	(*DeckFiltered_SearchTerm)(nil),          // 26: pb.DeckFiltered.SearchTerm
+	(*MediaEntries_MediaEntry)(nil),          // 27: pb.MediaEntries.MediaEntry
 }
 var file_pb_anki_proto_depIdxs = []int32{
 	1,  // 0: pb.NotetypeConfig.kind:type_name -> pb.NotetypeConfig.Kind
-	19, // 1: pb.NotetypeConfig.reqs:type_name -> pb.NotetypeConfig.CardRequirement
+	24, // 1: pb.NotetypeConfig.reqs:type_name -> pb.NotetypeConfig.CardRequirement
 	0,  // 2: pb.NotetypeConfig.original_stock_kind:type_name -> pb.StockNotetype.OriginalStockKind
 	3,  // 3: pb.DeckConfig.new_card_insert_order:type_name -> pb.DeckConfig.NewCardInsertOrder
 	4,  // 4: pb.DeckConfig.new_card_gather_priority:type_name -> pb.DeckConfig.NewCardGatherPriority
@@ -1916,14 +2555,20 @@ var file_pb_anki_proto_depIdxs = []int32{
 	8,  // 9: pb.DeckConfig.leech_action:type_name -> pb.DeckConfig.LeechAction
 	10, // 10: pb.DeckConfig.question_action:type_name -> pb.DeckConfig.QuestionAction
 	9,  // 11: pb.DeckConfig.answer_action:type_name -> pb.DeckConfig.AnswerAction
-	11, // 12: pb.PackageMetadata.version:type_name -> pb.PackageMetadata.Version
-	20, // 13: pb.MediaEntries.entries:type_name -> pb.MediaEntries.MediaEntry
-	2,  // 14: pb.NotetypeConfig.CardRequirement.kind:type_name -> pb.NotetypeConfig.CardRequirement.Kind
-	15, // [15:15] is the sub-list for method output_type
-	15, // [15:15] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	25, // 12: pb.DeckNormal.review_limit_today:type_name -> pb.DeckNormal.DayLimit
+	25, // 13: pb.DeckNormal.new_limit_today:type_name -> pb.DeckNormal.DayLimit
+	26, // 14: pb.DeckFiltered.search_terms:type_name -> pb.DeckFiltered.SearchTerm
+	19, // 15: pb.DeckKind.normal:type_name -> pb.DeckNormal
+	20, // 16: pb.DeckKind.filtered:type_name -> pb.DeckFiltered
+	12, // 17: pb.PackageMetadata.version:type_name -> pb.PackageMetadata.Version
+	27, // 18: pb.MediaEntries.entries:type_name -> pb.MediaEntries.MediaEntry
+	2,  // 19: pb.NotetypeConfig.CardRequirement.kind:type_name -> pb.NotetypeConfig.CardRequirement.Kind
+	11, // 20: pb.DeckFiltered.SearchTerm.order:type_name -> pb.DeckFiltered.SearchTerm.Order
+	21, // [21:21] is the sub-list for method output_type
+	21, // [21:21] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_pb_anki_proto_init() }
@@ -1934,14 +2579,19 @@ func file_pb_anki_proto_init() {
 	file_pb_anki_proto_msgTypes[1].OneofWrappers = []any{}
 	file_pb_anki_proto_msgTypes[2].OneofWrappers = []any{}
 	file_pb_anki_proto_msgTypes[3].OneofWrappers = []any{}
-	file_pb_anki_proto_msgTypes[8].OneofWrappers = []any{}
+	file_pb_anki_proto_msgTypes[6].OneofWrappers = []any{}
+	file_pb_anki_proto_msgTypes[8].OneofWrappers = []any{
+		(*DeckKind_Normal)(nil),
+		(*DeckKind_Filtered)(nil),
+	}
+	file_pb_anki_proto_msgTypes[14].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_pb_anki_proto_rawDesc), len(file_pb_anki_proto_rawDesc)),
-			NumEnums:      12,
-			NumMessages:   9,
+			NumEnums:      13,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

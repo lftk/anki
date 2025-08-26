@@ -3,6 +3,9 @@ package anki
 import (
 	"iter"
 	"time"
+
+	"github.com/lftk/anki/pb"
+	"google.golang.org/protobuf/proto"
 )
 
 // Deck represents a deck in Anki.
@@ -11,8 +14,8 @@ type Deck struct {
 	Name     string
 	Modified time.Time
 	USN      int64
-	Common   []byte
-	Kind     []byte
+	Common   *pb.DeckCommon
+	Kind     *pb.DeckKind
 }
 
 // AddDeck adds a new deck to the collection.
@@ -21,15 +24,26 @@ func (c *Collection) AddDeck(deck *Deck) error {
 	if id == 0 {
 		id = time.Now().UnixMilli()
 	}
+
+	common, err := proto.Marshal(deck.Common)
+	if err != nil {
+		return err
+	}
+
+	kind, err := proto.Marshal(deck.Kind)
+	if err != nil {
+		return err
+	}
+
 	args := []any{
 		id,
 		deck.Name,
 		timeUnix(deck.Modified),
 		deck.USN,
-		deck.Common,
-		deck.Kind,
+		common,
+		kind,
 	}
-	id, err := sqlInsert(c.db, addDeckQuery, args...)
+	id, err = sqlInsert(c.db, addDeckQuery, args...)
 	if err == nil {
 		deck.ID = id
 	}
@@ -53,9 +67,22 @@ func (c *Collection) ListDecks(*ListDecksOptions) iter.Seq2[*Deck, error] {
 func scanDeck(_ sqlQueryer, row sqlRow) (*Deck, error) {
 	var deck Deck
 	var mod int64
-	if err := row.Scan(&deck.ID, &deck.Name, &mod, &deck.USN, &deck.Common, &deck.Kind); err != nil {
+	var common []byte
+	var kind []byte
+	if err := row.Scan(&deck.ID, &deck.Name, &mod, &deck.USN, &common, &kind); err != nil {
 		return nil, err
 	}
+
+	deck.Common = new(pb.DeckCommon)
+	if err := proto.Unmarshal(common, deck.Common); err != nil {
+		return nil, err
+	}
+
+	deck.Kind = new(pb.DeckKind)
+	if err := proto.Unmarshal(kind, deck.Kind); err != nil {
+		return nil, err
+	}
+
 	deck.Modified = time.Unix(mod, 0)
 	return &deck, nil
 }
