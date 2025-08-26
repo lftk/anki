@@ -2,6 +2,7 @@ package anki
 
 import (
 	"iter"
+	"strings"
 	"time"
 
 	"github.com/lftk/anki/pb"
@@ -11,11 +12,28 @@ import (
 // Deck represents a deck in Anki.
 type Deck struct {
 	ID       int64
-	Name     string
+	Name     DeckName
 	Modified time.Time
 	USN      int64
 	Common   *pb.DeckCommon
 	Kind     *pb.DeckKind
+}
+
+// DeckName is the name of a deck.
+type DeckName string
+
+// Parent returns the parent deck's name.
+func (dn DeckName) Parent() DeckName {
+	i := strings.LastIndexByte(string(dn), '\x1f')
+	if i != -1 {
+		return dn[:i]
+	}
+	return ""
+}
+
+// HumanString returns the deck name in a human-readable format.
+func (dn DeckName) HumanString() string {
+	return strings.ReplaceAll(string(dn), "\x1f", "::")
 }
 
 // AddDeck adds a new deck to the collection.
