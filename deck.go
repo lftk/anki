@@ -1,6 +1,8 @@
 package anki
 
 import (
+	"database/sql"
+	"errors"
 	"iter"
 	"strings"
 	"time"
@@ -22,7 +24,15 @@ type Deck struct {
 // DeckName is the name of a deck.
 type DeckName string
 
+// JoinDeckName joins deck name components into a single DeckName.
+// In Anki, deck names are hierarchical, separated by "::".
+// Internally, they are stored with the U+001F INFORMATION SEPARATOR ONE character.
+func JoinDeckName(ss ...string) DeckName {
+	return DeckName(strings.Join(ss, "\x1f"))
+}
+
 // Parent returns the parent deck's name.
+// If the deck is a top-level deck, it returns an empty string.
 func (dn DeckName) Parent() DeckName {
 	i := strings.LastIndexByte(string(dn), '\x1f')
 	if i != -1 {
@@ -31,13 +41,64 @@ func (dn DeckName) Parent() DeckName {
 	return ""
 }
 
-// HumanString returns the deck name in a human-readable format.
+// Components returns the individual components of the deck name.
+func (dn DeckName) Components() []string {
+	return strings.Split(string(dn), "\x1f")
+}
+
+// HumanString returns the deck name in a human-readable format,
+// with "::" as the separator.
 func (dn DeckName) HumanString() string {
 	return strings.ReplaceAll(string(dn), "\x1f", "::")
 }
 
 // AddDeck adds a new deck to the collection.
+// If the parent decks do not exist, they will be created automatically.
 func (c *Collection) AddDeck(deck *Deck) error {
+	return sqlTransact(c.db, func(tx *sql.Tx) error {
+		var query = getDeckQuery + " WHERE name = ?"
+
+		// Ensure all parent decks exist.
+		for deckName := deck.Name.Parent(); deckName != ""; deckName = deckName.Parent() {
+			_, err := sqlGet(tx, scanDeck, query, deckName)
+			if err == nil {
+				// Parent deck already exists.
+				continue
+			}
+
+			if !errors.Is(err, sql.ErrNoRows) {
+				return err
+			}
+
+			// Create the parent deck if it doesn't exist.
+			parent := &Deck{
+				ID:       0, // Let the database assign an ID.
+				Name:     deckName,
+				Modified: time.Now(),
+				USN:      deck.USN,
+				Common: &pb.DeckCommon{
+					StudyCollapsed:   true,
+					BrowserCollapsed: true,
+				},
+				Kind: &pb.DeckKind{
+					Kind: &pb.DeckKind_Normal{
+						Normal: &pb.DeckNormal{
+							ConfigId: 1, // Default config.
+						},
+					},
+				},
+			}
+			if err := addDeck(tx, parent); err != nil {
+				return err
+			}
+		}
+
+		return addDeck(tx, deck)
+	})
+}
+
+// addDeck is a helper function to add a deck to the database.
+func addDeck(e sqlExecer, deck *Deck) error {
 	id := deck.ID
 	if id == 0 {
 		id = time.Now().UnixMilli()
@@ -61,7 +122,7 @@ func (c *Collection) AddDeck(deck *Deck) error {
 		common,
 		kind,
 	}
-	id, err = sqlInsert(c.db, addDeckQuery, args...)
+	id, err = sqlInsert(e, addDeckQuery, args...)
 	if err == nil {
 		deck.ID = id
 	}
