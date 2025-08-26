@@ -27,14 +27,14 @@ type DeckName string
 // JoinDeckName joins deck name components into a single DeckName.
 // In Anki, deck names are hierarchical, separated by "::".
 // Internally, they are stored with the U+001F INFORMATION SEPARATOR ONE character.
-func JoinDeckName(ss ...string) DeckName {
-	return DeckName(strings.Join(ss, "\x1f"))
+func JoinDeckName(components ...string) DeckName {
+	return DeckName(strings.Join(components, deckNameSeparator))
 }
 
 // Parent returns the parent deck's name.
 // If the deck is a top-level deck, it returns an empty string.
 func (dn DeckName) Parent() DeckName {
-	i := strings.LastIndexByte(string(dn), '\x1f')
+	i := strings.LastIndex(string(dn), deckNameSeparator)
 	if i != -1 {
 		return dn[:i]
 	}
@@ -43,14 +43,16 @@ func (dn DeckName) Parent() DeckName {
 
 // Components returns the individual components of the deck name.
 func (dn DeckName) Components() []string {
-	return strings.Split(string(dn), "\x1f")
+	return strings.Split(string(dn), deckNameSeparator)
 }
 
 // HumanString returns the deck name in a human-readable format,
 // with "::" as the separator.
 func (dn DeckName) HumanString() string {
-	return strings.ReplaceAll(string(dn), "\x1f", "::")
+	return strings.ReplaceAll(string(dn), deckNameSeparator, "::")
 }
+
+const deckNameSeparator = "\x1f"
 
 // AddDeck adds a new deck to the collection.
 // If the parent decks do not exist, they will be created automatically.
