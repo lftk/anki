@@ -137,11 +137,29 @@ func (c *Collection) GetDeck(id int64) (*Deck, error) {
 }
 
 // ListDecksOptions specifies options for listing decks.
-type ListDecksOptions struct{}
+type ListDecksOptions struct {
+	ParentName *DeckName
+}
 
 // ListDecks lists all decks.
-func (c *Collection) ListDecks(*ListDecksOptions) iter.Seq2[*Deck, error] {
-	return sqlSelectSeq(c.db, scanDeck, getDeckQuery)
+func (c *Collection) ListDecks(opts *ListDecksOptions) iter.Seq2[*Deck, error] {
+	var args []any
+	var conds []string
+
+	if opts != nil {
+		if opts.ParentName != nil && *opts.ParentName != "" {
+			conds = append(conds, "name LIKE ? AND name NOT LIKE ?")
+			pattern := string(*opts.ParentName) + deckNameSeparator + "%"
+			args = append(args, pattern, pattern+deckNameSeparator+"%")
+		}
+	}
+
+	query := getDeckQuery
+	if len(conds) > 0 {
+		query += " WHERE " + strings.Join(conds, " AND ")
+	}
+
+	return sqlSelectSeq(c.db, scanDeck, query, args...)
 }
 
 // scanDeck scans a deck from a database row.
