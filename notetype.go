@@ -38,7 +38,7 @@ type Template struct {
 
 // GetNotetype gets a notetype by its ID.
 func (c *Collection) GetNotetype(id int64) (*Notetype, error) {
-	return sqlGet(c.db, scanNotetype, getNotetypeQuery+" WHERE id = ?", id)
+	return getNotetype(c.db, id)
 }
 
 // AddNotetype adds a new notetype to the collection.
@@ -142,6 +142,11 @@ type ListNotetypesOptions struct{}
 // ListNotetypes lists all notetypes.
 func (c *Collection) ListNotetypes(opts *ListNotetypesOptions) iter.Seq2[*Notetype, error] {
 	return sqlSelectSeq(c.db, scanNotetype, getNotetypeQuery)
+}
+
+// getNotetype gets a notetype by its ID.
+func getNotetype(q sqlQueryer, id int64) (*Notetype, error) {
+	return sqlGet(q, scanNotetype, getNotetypeQuery+" WHERE id = ?", id)
 }
 
 // addField adds a field to a notetype.

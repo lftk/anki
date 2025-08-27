@@ -34,20 +34,24 @@ func (c *Collection) GetNote(id int64) (*Note, error) {
 
 // AddNote adds a new note to the collection.
 func (c *Collection) AddNote(deckID int64, note *Note) error {
-	notetype, err := c.GetNotetype(note.NotetypeID)
-	if err != nil {
-		return err
-	}
-	return c.addNote(deckID, note, notetype)
+	return sqlTransact(c.db, func(tx *sql.Tx) error {
+		notetype, err := getNotetype(tx, note.NotetypeID)
+		if err != nil {
+			return err
+		}
+		return addNote(tx, deckID, note, notetype)
+	})
 }
 
 // UpdateNote updates an existing note in the collection.
 func (c *Collection) UpdateNote(note *Note) error {
-	notetype, err := c.GetNotetype(note.NotetypeID)
-	if err != nil {
-		return err
-	}
-	return c.updateNote(note, notetype)
+	return sqlTransact(c.db, func(tx *sql.Tx) error {
+		notetype, err := getNotetype(tx, note.NotetypeID)
+		if err != nil {
+			return err
+		}
+		return updateNote(tx, note, notetype)
+	})
 }
 
 // DeleteNote deletes a note from the collection by its ID.
@@ -109,48 +113,86 @@ func (c *Collection) ListNotes(opts *ListNotesOptions) iter.Seq2[*Note, error] {
 }
 
 // addNote is an internal helper to add a note.
-func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error {
-	return sqlTransact(c.db, func(tx *sql.Tx) error {
-		if note.GUID == "" {
-			guid, err := randomGUID()
+func addNote(tx *sql.Tx, deckID int64, note *Note, notetype *Notetype) error {
+	if note.GUID == "" {
+		guid, err := randomGUID()
+		if err != nil {
+			return err
+		}
+		note.GUID = guid
+	}
+	note.Modified = time.Now()
+	note.USN = -1
+
+	fld1, sfld, err := prepareNoteFields(note, notetype)
+	if err != nil {
+		return err
+	}
+	note.Checksum = fieldChecksum(fld1)
+
+	id := note.ID
+	if id == 0 {
+		id = time.Now().UnixMilli()
+	}
+
+	args := []any{
+		id,
+		note.GUID,
+		note.NotetypeID,
+		timeUnix(note.Modified),
+		note.USN,
+		joinTags(note.Tags),
+		joinFields(note.Fields),
+		sfld,
+		note.Checksum,
+		note.Flags,
+		note.Data,
+	}
+	note.ID, err = sqlInsert(tx, addNoteQuery, args...)
+	if err != nil {
+		return err
+	}
+
+	for card, err := range generateCards(deckID, note, notetype, nil) {
+		if err != nil {
+			return err
+		}
+		if err = addCard(tx, card); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// updateNote is an internal helper to update a note.
+func updateNote(tx *sql.Tx, note *Note, notetype *Notetype) error {
+	oldNote, err := getNote(tx, note.ID)
+	if err != nil {
+		return err
+	}
+
+	if oldNote.NotetypeID != note.NotetypeID {
+		return errors.New("modifying the notetype of a note is not supported")
+	}
+
+	if !slices.Equal(oldNote.Fields, note.Fields) {
+		var deckID int64
+		var existingOrds []int64
+		for card, err := range listCards(tx, &ListCardsOptions{NoteID: &note.ID}) {
 			if err != nil {
 				return err
 			}
-			note.GUID = guid
-		}
-		note.Modified = time.Now()
-		note.USN = -1
-
-		fld1, sfld, err := prepareNoteFields(note, notetype)
-		if err != nil {
-			return err
-		}
-		note.Checksum = fieldChecksum(fld1)
-
-		id := note.ID
-		if id == 0 {
-			id = time.Now().UnixMilli()
+			if deckID == 0 {
+				deckID = card.DeckID
+			}
+			existingOrds = append(existingOrds, card.Ordinal)
 		}
 
-		args := []any{
-			id,
-			note.GUID,
-			note.NotetypeID,
-			timeUnix(note.Modified),
-			note.USN,
-			joinTags(note.Tags),
-			joinFields(note.Fields),
-			sfld,
-			note.Checksum,
-			note.Flags,
-			note.Data,
-		}
-		note.ID, err = sqlInsert(tx, addNoteQuery, args...)
-		if err != nil {
-			return err
+		if deckID == 0 {
+			return errors.New("cannot find deck ID")
 		}
 
-		for card, err := range generateCards(deckID, note, notetype, nil) {
+		for card, err := range generateCards(deckID, note, notetype, existingOrds) {
 			if err != nil {
 				return err
 			}
@@ -158,82 +200,40 @@ func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error
 				return err
 			}
 		}
-		return nil
-	})
-}
+	}
 
-// updateNote is an internal helper to update a note.
-func (c *Collection) updateNote(note *Note, notetype *Notetype) error {
-	return sqlTransact(c.db, func(tx *sql.Tx) error {
-		oldNote, err := getNote(tx, note.ID)
+	// Update note fields
+	if note.GUID == "" {
+		guid, err := randomGUID()
 		if err != nil {
 			return err
 		}
+		note.GUID = guid
+	}
+	note.Modified = time.Now()
+	note.USN = -1
 
-		if oldNote.NotetypeID != note.NotetypeID {
-			return errors.New("modifying the notetype of a note is not supported")
-		}
+	fld1, sfld, err := prepareNoteFields(note, notetype)
+	if err != nil {
+		return err
+	}
+	note.Checksum = fieldChecksum(fld1)
 
-		if !slices.Equal(oldNote.Fields, note.Fields) {
-			var deckID int64
-			var existingOrds []int64
-			for card, err := range listCards(tx, &ListCardsOptions{NoteID: &note.ID}) {
-				if err != nil {
-					return err
-				}
-				if deckID == 0 {
-					deckID = card.DeckID
-				}
-				existingOrds = append(existingOrds, card.Ordinal)
-			}
-
-			if deckID == 0 {
-				return errors.New("cannot find deck ID")
-			}
-
-			for card, err := range generateCards(deckID, note, notetype, existingOrds) {
-				if err != nil {
-					return err
-				}
-				if err = addCard(tx, card); err != nil {
-					return err
-				}
-			}
-		}
-
-		// Update note fields
-		if note.GUID == "" {
-			guid, err := randomGUID()
-			if err != nil {
-				return err
-			}
-			note.GUID = guid
-		}
-		note.Modified = time.Now()
-		note.USN = -1
-
-		fld1, sfld, err := prepareNoteFields(note, notetype)
-		if err != nil {
-			return err
-		}
-		note.Checksum = fieldChecksum(fld1)
-
-		// Update the note itself
-		args := []any{
-			note.GUID,
-			note.NotetypeID,
-			timeUnix(note.Modified),
-			note.USN,
-			joinTags(note.Tags),
-			joinFields(note.Fields),
-			sfld,
-			note.Checksum,
-			note.Flags,
-			note.Data,
-			note.ID,
-		}
-		return sqlExecute(tx, updateNoteQuery, args...)
-	})
+	// Update the note itself
+	args := []any{
+		note.GUID,
+		note.NotetypeID,
+		timeUnix(note.Modified),
+		note.USN,
+		joinTags(note.Tags),
+		joinFields(note.Fields),
+		sfld,
+		note.Checksum,
+		note.Flags,
+		note.Data,
+		note.ID,
+	}
+	return sqlExecute(tx, updateNoteQuery, args...)
 }
 
 // prepareNoteFields prepares the first field and sort field for a note.
