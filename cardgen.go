@@ -11,7 +11,7 @@ import (
 
 // generateCards generates cards for a given note.
 // It takes a deckID, a note, and a notetype and returns a sequence of cards.
-func generateCards(deckID int64, note *Note, notetype *Notetype) iter.Seq2[*Card, error] {
+func generateCards(deckID int64, note *Note, notetype *Notetype, existingOrds []int64) iter.Seq2[*Card, error] {
 	return func(yield func(*Card, error) bool) {
 		cards, err := newCardsRequired(deckID, note, notetype)
 		if err != nil {
@@ -19,6 +19,9 @@ func generateCards(deckID int64, note *Note, notetype *Notetype) iter.Seq2[*Card
 			return
 		}
 		for _, card := range cards {
+			if slices.Contains(existingOrds, card.Ordinal) {
+				continue
+			}
 			c := &Card{
 				NoteID:   note.ID,
 				DeckID:   card.DeckID,

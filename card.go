@@ -110,6 +110,11 @@ type ListCardsOptions struct {
 
 // ListCards lists cards with optional filtering.
 func (c *Collection) ListCards(opts *ListCardsOptions) iter.Seq2[*Card, error] {
+	return listCards(c.db, opts)
+}
+
+// listCards lists cards with optional filtering.
+func listCards(q sqlQueryer, opts *ListCardsOptions) iter.Seq2[*Card, error] {
 	var args []any
 	var conds []string
 
@@ -130,7 +135,7 @@ func (c *Collection) ListCards(opts *ListCardsOptions) iter.Seq2[*Card, error] {
 		query += " WHERE " + strings.Join(conds, " AND ")
 	}
 
-	return sqlSelectSeq(c.db, scanCard, query, args...)
+	return sqlSelectSeq(q, scanCard, query, args...)
 }
 
 // scanCard scans a card from a database row.

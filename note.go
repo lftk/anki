@@ -4,9 +4,11 @@ import (
 	"crypto/sha1"
 	"database/sql"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"iter"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 )
@@ -27,7 +29,7 @@ type Note struct {
 
 // GetNote gets a note by its ID.
 func (c *Collection) GetNote(id int64) (*Note, error) {
-	return sqlGet(c.db, scanNote, getNoteQuery+" WHERE id = ?", id)
+	return getNote(c.db, id)
 }
 
 // AddNote adds a new note to the collection.
@@ -53,6 +55,11 @@ func (c *Collection) DeleteNote(id int64) error {
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
 		return deleteNote(tx, id)
 	})
+}
+
+// getNote gets a note by its ID.
+func getNote(q sqlQueryer, id int64) (*Note, error) {
+	return sqlGet(q, scanNote, getNoteQuery+" WHERE id = ?", id)
 }
 
 // deleteNotes deletes all notes of a given notetype.
@@ -143,7 +150,7 @@ func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error
 			return err
 		}
 
-		for card, err := range generateCards(deckID, note, notetype) {
+		for card, err := range generateCards(deckID, note, notetype, nil) {
 			if err != nil {
 				return err
 			}
@@ -158,6 +165,50 @@ func (c *Collection) addNote(deckID int64, note *Note, notetype *Notetype) error
 // updateNote is an internal helper to update a note.
 func (c *Collection) updateNote(note *Note, notetype *Notetype) error {
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
+		oldNote, err := getNote(tx, note.ID)
+		if err != nil {
+			return err
+		}
+
+		if oldNote.NotetypeID != note.NotetypeID {
+			return errors.New("modifying the notetype of a note is not supported")
+		}
+
+		if !slices.Equal(oldNote.Fields, note.Fields) {
+			var deckID int64
+			var existingOrds []int64
+			for card, err := range listCards(tx, &ListCardsOptions{NoteID: &note.ID}) {
+				if err != nil {
+					return err
+				}
+				if deckID == 0 {
+					deckID = card.DeckID
+				}
+				existingOrds = append(existingOrds, card.Ordinal)
+			}
+
+			if deckID == 0 {
+				return errors.New("cannot find deck ID")
+			}
+
+			for card, err := range generateCards(deckID, note, notetype, existingOrds) {
+				if err != nil {
+					return err
+				}
+				if err = addCard(tx, card); err != nil {
+					return err
+				}
+			}
+		}
+
+		// Update note fields
+		if note.GUID == "" {
+			guid, err := randomGUID()
+			if err != nil {
+				return err
+			}
+			note.GUID = guid
+		}
 		note.Modified = time.Now()
 		note.USN = -1
 
@@ -167,6 +218,7 @@ func (c *Collection) updateNote(note *Note, notetype *Notetype) error {
 		}
 		note.Checksum = fieldChecksum(fld1)
 
+		// Update the note itself
 		args := []any{
 			note.GUID,
 			note.NotetypeID,
