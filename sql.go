@@ -65,7 +65,7 @@ func sqlSelectSeq[T any](q sqlQueryer, fn func(sqlQueryer, sqlRow) (T, error), q
 			yield(zero, err)
 			return
 		}
-		defer rows.Close()
+		defer rows.Close() //nolint:errcheck
 
 		for rows.Next() {
 			val, err := fn(q, rows)

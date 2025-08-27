@@ -68,7 +68,7 @@ func Open(col string) (*Collection, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer r.Close()
+		defer r.Close() //nolint:errcheck
 
 		if err = Unpack(&r.Reader, dir); err != nil {
 			return nil, err
@@ -139,7 +139,7 @@ func (c *Collection) SaveAs(path string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer f.Close() //nolint:errcheck
 
 	_, err = c.WriteTo(f)
 	return err

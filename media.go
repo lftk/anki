@@ -37,7 +37,7 @@ func (c *Collection) WriteMedia(name string, content []byte) error {
 	if err != nil {
 		return err
 	}
-	defer w.Close()
+	defer w.Close() //nolint:errcheck
 
 	_, err = w.Write(content)
 	return err
@@ -49,13 +49,13 @@ func (c *Collection) CopyMedia(media Media) error {
 	if err != nil {
 		return err
 	}
-	defer r.Close()
+	defer r.Close() //nolint:errcheck
 
 	w, err := c.CreateMedia(media.Name())
 	if err != nil {
 		return err
 	}
-	defer w.Close()
+	defer w.Close() //nolint:errcheck
 
 	_, err = io.Copy(w, r)
 	return err

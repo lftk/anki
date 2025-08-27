@@ -79,13 +79,13 @@ func restoreFile(r *zip.Reader, meta *pb.PackageMetadata, name string, path stri
 	if err != nil {
 		return err
 	}
-	defer src.Close()
+	defer src.Close() //nolint:errcheck
 
 	dst, err := os.Create(path)
 	if err != nil {
 		return err
 	}
-	defer dst.Close()
+	defer dst.Close() //nolint:errcheck
 
 	_, err = io.Copy(dst, src)
 	return err
@@ -102,13 +102,13 @@ func writeDatabase(w *zip.Writer, path string) error {
 	if err != nil {
 		return err
 	}
-	defer src.Close()
+	defer src.Close() //nolint:errcheck
 
 	dst, err := zipCreate(w, "collection.anki21b", true)
 	if err != nil {
 		return err
 	}
-	defer dst.Close()
+	defer dst.Close() //nolint:errcheck
 
 	_, err = io.Copy(dst, src)
 	return err
@@ -199,13 +199,13 @@ func writeMediaEntry(w *zip.Writer, path, name string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer src.Close()
+	defer src.Close() //nolint:errcheck
 
 	dst, err := zipCreate(w, name, true)
 	if err != nil {
 		return nil, err
 	}
-	defer dst.Close()
+	defer dst.Close() //nolint:errcheck
 
 	h := sha1.New()
 	_, err = io.Copy(io.MultiWriter(h, dst), src)
@@ -300,13 +300,13 @@ func copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer r.Close()
+	defer r.Close() //nolint:errcheck
 
 	w, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer w.Close()
+	defer w.Close() //nolint:errcheck
 
 	_, err = io.Copy(w, r)
 	return err

@@ -58,7 +58,7 @@ func zipReadAll(r *zip.Reader, name string, dcomp bool) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer f.Close() //nolint:errcheck
 
 	return io.ReadAll(f)
 }
@@ -69,7 +69,7 @@ func zipWrite(w *zip.Writer, name string, comp bool, data []byte) error {
 	if err != nil {
 		return err
 	}
-	defer zw.Close()
+	defer zw.Close() //nolint:errcheck
 
 	_, err = zw.Write(data)
 	return err
