@@ -133,7 +133,12 @@ func addDeck(e sqlExecer, deck *Deck) error {
 
 // GetDeck gets a deck by its ID.
 func (c *Collection) GetDeck(id int64) (*Deck, error) {
-	return sqlGet(c.db, scanDeck, getDeckQuery+" WHERE id = ?", id)
+	return getDeck(c.db, id)
+}
+
+// getDeck gets a deck by its ID.
+func getDeck(q sqlQueryer, id int64) (*Deck, error) {
+	return sqlGet(q, scanDeck, getDeckQuery+" WHERE id = ?", id)
 }
 
 // ListDecksOptions specifies options for listing decks.

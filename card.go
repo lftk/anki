@@ -1,6 +1,9 @@
 package anki
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"iter"
 	"strings"
 	"time"
@@ -69,6 +72,43 @@ func (c *Collection) GetCard(id int64) (*Card, error) {
 	return sqlGet(c.db, scanCard, getCardQuery+" WHERE id = ?", id)
 }
 
+// SetDeck moves a list of cards to a different deck.
+func (c *Collection) SetDeck(cards []int64, deckID int64) error {
+	return sqlTransact(c.db, func(tx *sql.Tx) error {
+		if _, err := getDeck(tx, deckID); err != nil {
+			if !errors.Is(err, sql.ErrNoRows) {
+				return err
+			}
+			return fmt.Errorf("deck not found: %d", deckID)
+		}
+
+		for _, id := range cards {
+			card, err := getCard(tx, id)
+			if err != nil {
+				return err
+			}
+
+			if card.DeckID == deckID {
+				continue
+			}
+
+			card.OriginalDeckID = card.DeckID
+			card.DeckID = deckID
+			card.Modified = time.Now()
+
+			if err = updateCard(tx, card); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+// getCard gets a card by its ID.
+func getCard(q sqlQueryer, id int64) (*Card, error) {
+	return sqlGet(q, scanCard, getCardQuery+" WHERE id = ?", id)
+}
+
 // addCard adds a new card to the collection.
 func addCard(e sqlExecer, card *Card) error {
 	id := card.ID
@@ -100,6 +140,31 @@ func addCard(e sqlExecer, card *Card) error {
 		card.ID = id
 	}
 	return err
+}
+
+// updateCard updates a card in the collection.
+func updateCard(e sqlExecer, card *Card) error {
+	args := []any{
+		card.NoteID,
+		card.DeckID,
+		card.Ordinal,
+		timeUnix(card.Modified),
+		card.USN,
+		card.Type,
+		card.Queue,
+		card.Due,
+		card.Interval,
+		card.Factor,
+		card.Repetitions,
+		card.Lapses,
+		card.Left,
+		card.OriginalDue,
+		card.OriginalDeckID,
+		card.Flags,
+		card.Data,
+		card.ID,
+	}
+	return sqlExecute(e, updateCardQuery, args...)
 }
 
 // ListCardsOptions specifies options for listing cards.

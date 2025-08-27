@@ -18,6 +18,9 @@ var addDeckQuery string
 //go:embed queries/get_card.sql
 var getCardQuery string
 
+//go:embed queries/update_card.sql
+var updateCardQuery string
+
 //go:embed queries/add_note.sql
 var addNoteQuery string
 
