@@ -10,23 +10,23 @@ import (
 
 // Collection represents an Anki collection.
 type Collection struct {
-	db        *sql.DB
-	dir       string
-	isTempDir bool
-	props     *props
+	db    *sql.DB
+	dir   string
+	temp  bool
+	props *props
 }
 
 // newCollection creates a new collection from a database and directory.
-func newCollection(db *sql.DB, dir string, isTempDir bool) (*Collection, error) {
+func newCollection(db *sql.DB, dir string, temp bool) (*Collection, error) {
 	props, err := loadProps(db)
 	if err != nil {
 		return nil, err
 	}
 	return &Collection{
-		db:        db,
-		dir:       dir,
-		isTempDir: isTempDir,
-		props:     props,
+		db:    db,
+		dir:   dir,
+		temp:  temp,
+		props: props,
 	}, nil
 }
 
@@ -100,12 +100,12 @@ func LoadDir(dir string) (*Collection, error) {
 }
 
 // loadDir is an internal helper to load a collection from a directory.
-func loadDir(dir string, isTempDir bool) (*Collection, error) {
+func loadDir(dir string, temp bool) (*Collection, error) {
 	db, err := sqlite3Open(databasePath(dir) + "?_journal=WAL")
 	if err != nil {
 		return nil, err
 	}
-	return newCollection(db, dir, isTempDir)
+	return newCollection(db, dir, temp)
 }
 
 // WriteTo writes the collection to an io.Writer.
@@ -156,7 +156,7 @@ func (c *Collection) DumpTo(dir string) error {
 // Close closes the collection and cleans up temporary files.
 func (c *Collection) Close() error {
 	defer func() {
-		if c.isTempDir {
+		if c.temp {
 			_ = os.RemoveAll(c.dir)
 		}
 	}()
@@ -198,8 +198,6 @@ type props struct {
 
 // loadProps loads the properties of a collection from the database.
 func loadProps(db *sql.DB) (*props, error) {
-	const query = `SELECT mod, scm, ls, usn FROM col WHERE id = 1`
-
 	fn := func(_ sqlQueryer, row sqlRow) (*props, error) {
 		var mod, scm, ls, usn int64
 		if err := row.Scan(&mod, &scm, &ls, &usn); err != nil {
@@ -212,5 +210,5 @@ func loadProps(db *sql.DB) (*props, error) {
 			usn: usn,
 		}, nil
 	}
-	return sqlGet(db, fn, query)
+	return sqlGet(db, fn, getColQuery)
 }

@@ -98,3 +98,6 @@ var setTagQuery string
 
 //go:embed queries/delete_tag.sql
 var deleteTagQuery string
+
+//go:embed queries/get_col.sql
+var getColQuery string
