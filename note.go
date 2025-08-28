@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"html"
 	"iter"
 	"regexp"
 	"slices"
@@ -261,26 +262,20 @@ func fieldChecksum(field string) int64 {
 	h := sha1.New()
 	h.Write([]byte(field))
 	sum := h.Sum(nil)
-	return int64(int32(binary.BigEndian.Uint32(sum[:4])))
+	return int64(binary.BigEndian.Uint32(sum[:4]))
 }
 
 var (
-	htmlTagRegex   = regexp.MustCompile(`<[^>]*>`)
-	mediaFileRegex = regexp.MustCompile(`(?i)<img[^>]+src=["']?([^"'>]+)["']?[^>]*>|\[sound:([^\]]+)\]|\[anki:sound:([^\]]+)\]`)
+	htmlMediaTagRe = regexp.MustCompile(`(?i)<(?:img|audio|video|object|source)\b[^>]*?\s(?:src|data)=(?:"([^"]*)"|'([^']*)'|([^> ]+))`)
+	htmlTagRe      = regexp.MustCompile(`(?si)<!--.*?-->|<style.*?>.*?</style>|<script.*?>.*?</script>|<.*?>`)
 )
 
 // stripHTML strips HTML tags from a string, preserving media file references.
 func stripHTML(s string) string {
-	repl := func(match string) string {
-		submatches := mediaFileRegex.FindStringSubmatch(match)
-		for i := 1; i < len(submatches); i++ {
-			if submatches[i] != "" {
-				return submatches[i]
-			}
-		}
-		return ""
-	}
-	return htmlTagRegex.ReplaceAllString(mediaFileRegex.ReplaceAllStringFunc(s, repl), "")
+	s = htmlMediaTagRe.ReplaceAllString(s, " ${1}${2}${3} ")
+	s = htmlTagRe.ReplaceAllString(s, "")
+	s = html.UnescapeString(s)
+	return strings.ReplaceAll(s, "\u00a0", " ")
 }
 
 // scanNote scans a note from a database row.
