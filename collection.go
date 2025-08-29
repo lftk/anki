@@ -62,9 +62,9 @@ func Create() (*Collection, error) {
 }
 
 // Open opens a collection from a file.
-func Open(col string) (*Collection, error) {
+func Open(path string) (*Collection, error) {
 	return inTempDir(func(dir string) (*Collection, error) {
-		r, err := zip.OpenReader(col)
+		r, err := zip.OpenReader(path)
 		if err != nil {
 			return nil, err
 		}
@@ -116,7 +116,7 @@ func (c *Collection) WriteTo(w io.Writer) (int64, error) {
 	sw := &statsWriter{w: w}
 	zw := zip.NewWriter(sw)
 	if err := Pack(zw, c.dir); err != nil {
-		return 0, err
+		return sw.n, err
 	}
 	return sw.n, zw.Close()
 }
