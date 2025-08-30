@@ -31,3 +31,7 @@ Contributions are welcome! Please feel free to submit a pull request or open an 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+This project is heavily inspired by and based on the official [Anki](https://apps.ankiweb.net/) ecosystem. A big thank you to the Ankitects team and all contributors for their tremendous work on the original software.
