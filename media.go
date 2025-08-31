@@ -63,10 +63,10 @@ func (c *Collection) CopyMedia(media Media) error {
 
 // CreateMedia creates a new media file and returns a writer.
 func (c *Collection) CreateMedia(name string) (io.WriteCloser, error) {
-	if err := os.MkdirAll(c.mediaDir(), 0755); err != nil {
+	path := c.mediaPath(name)
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return nil, err
 	}
-	path := c.mediaPath(name)
 	f, err := os.Create(path)
 	if err != nil {
 		return nil, err
