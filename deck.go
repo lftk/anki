@@ -21,6 +21,25 @@ type Deck struct {
 	Kind     *pb.DeckKind
 }
 
+// NormalDeckKind creates a normal deck kind with the given configuration ID.
+func NormalDeckKind(configID int64) *pb.DeckKind {
+	return &pb.DeckKind{
+		Kind: &pb.DeckKind_Normal{
+			Normal: &pb.DeckNormal{
+				ConfigId: configID,
+			},
+		},
+	}
+}
+
+// DefaultDeckCommon returns the default deck common settings.
+func DefaultDeckCommon() *pb.DeckCommon {
+	return &pb.DeckCommon{
+		StudyCollapsed:   true,
+		BrowserCollapsed: true,
+	}
+}
+
 // DeckName is the name of a deck.
 type DeckName string
 
@@ -61,8 +80,8 @@ func (c *Collection) AddDeck(deck *Deck) error {
 		var query = getDeckQuery + " WHERE name = ?"
 
 		// Ensure all parent decks exist.
-		for deckName := deck.Name.Parent(); deckName != ""; deckName = deckName.Parent() {
-			_, err := sqlGet(tx, scanDeck, query, deckName)
+		for name := deck.Name.Parent(); name != ""; name = name.Parent() {
+			_, err := sqlGet(tx, scanDeck, query, name)
 			if err == nil {
 				// Parent deck already exists.
 				continue
@@ -75,20 +94,11 @@ func (c *Collection) AddDeck(deck *Deck) error {
 			// Create the parent deck if it doesn't exist.
 			parent := &Deck{
 				ID:       0, // Let the database assign an ID.
-				Name:     deckName,
+				Name:     name,
 				Modified: time.Now(),
 				USN:      deck.USN,
-				Common: &pb.DeckCommon{
-					StudyCollapsed:   true,
-					BrowserCollapsed: true,
-				},
-				Kind: &pb.DeckKind{
-					Kind: &pb.DeckKind_Normal{
-						Normal: &pb.DeckNormal{
-							ConfigId: 1, // Default config.
-						},
-					},
-				},
+				Common:   deck.Common,
+				Kind:     deck.Kind,
 			}
 			if err := addDeck(tx, parent); err != nil {
 				return err
@@ -106,11 +116,17 @@ func addDeck(e sqlExecer, deck *Deck) error {
 		id = time.Now().UnixMilli()
 	}
 
+	if deck.Common == nil {
+		deck.Common = DefaultDeckCommon()
+	}
 	common, err := proto.Marshal(deck.Common)
 	if err != nil {
 		return err
 	}
 
+	if deck.Kind == nil {
+		deck.Kind = NormalDeckKind(1) // Use default deck config ID.
+	}
 	kind, err := proto.Marshal(deck.Kind)
 	if err != nil {
 		return err

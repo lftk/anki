@@ -74,6 +74,9 @@ func (c *Collection) AddDeckConfig(config *DeckConfig) error {
 		id = time.Now().UnixMilli()
 	}
 
+	if config.Config == nil {
+		config.Config = DefaultDeckConfig()
+	}
 	inner, err := proto.Marshal(config.Config)
 	if err != nil {
 		return err

@@ -36,6 +36,15 @@ type Template struct {
 	Config   *pb.TemplateConfig
 }
 
+// SimpleTemplateConfig creates a simple template configuration with the given
+// front and back formats.
+func SimpleTemplateConfig(front, back string) *pb.TemplateConfig {
+	return &pb.TemplateConfig{
+		QFormat: front,
+		AFormat: back,
+	}
+}
+
 // GetNotetype gets a notetype by its ID.
 func (c *Collection) GetNotetype(id int64) (*Notetype, error) {
 	return getNotetype(c.db, id)
@@ -44,22 +53,31 @@ func (c *Collection) GetNotetype(id int64) (*Notetype, error) {
 // AddNotetype adds a new notetype to the collection.
 func (c *Collection) AddNotetype(notetype *Notetype) error {
 	return sqlTransact(c.db, func(tx *sql.Tx) error {
+		id := notetype.ID
+		if id == 0 {
+			id = time.Now().UnixMilli()
+		}
+
 		notetype.Modified = time.Now()
 		notetype.USN = -1
 
+		if notetype.Config == nil {
+			notetype.Config = &pb.NotetypeConfig{}
+		}
 		config, err := proto.Marshal(notetype.Config)
 		if err != nil {
 			return err
 		}
 
 		args := []any{
-			notetype.ID,
+			id,
 			notetype.Name,
 			timeUnix(notetype.Modified),
 			notetype.USN,
 			config,
 		}
-		if err = sqlExecute(tx, addNotetypeQuery, args...); err != nil {
+		notetype.ID, err = sqlInsert(tx, addNotetypeQuery, args...)
+		if err != nil {
 			return err
 		}
 
@@ -151,6 +169,9 @@ func getNotetype(q sqlQueryer, id int64) (*Notetype, error) {
 
 // addField adds a field to a notetype.
 func addField(tx *sql.Tx, notetypeID int64, field *Field) error {
+	if field.Config == nil {
+		field.Config = &pb.FieldConfig{}
+	}
 	config, err := proto.Marshal(field.Config)
 	if err != nil {
 		return err
