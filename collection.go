@@ -44,28 +44,19 @@ func inTempDir(fn func(dir string) (*Collection, error)) (*Collection, error) {
 	return col, nil
 }
 
-// createIn creates and initializes a new collection database in the specified directory.
-func createIn(dir string) (*sql.DB, error) {
-	db, err := sqlite3Open(databasePath(dir) + "?_journal=WAL&mode=rwc")
-	if err != nil {
-		return nil, err
-	}
-
-	if err := sqlExecute(db, schemaQuery); err != nil {
-		_ = db.Close()
-		return nil, err
-	}
-
-	return db, nil
-}
-
 // Create creates a new, empty collection.
 func Create() (*Collection, error) {
 	return inTempDir(func(dir string) (*Collection, error) {
-		db, err := createIn(dir)
+		db, err := sqlite3Open(databasePath(dir) + "?_journal=WAL&mode=rwc")
 		if err != nil {
 			return nil, err
 		}
+
+		if err := sqlExecute(db, schemaQuery); err != nil {
+			_ = db.Close()
+			return nil, err
+		}
+
 		return newCollection(db, dir, true)
 	})
 }
@@ -103,29 +94,8 @@ func ReadFrom(r io.ReaderAt, size int64) (*Collection, error) {
 	})
 }
 
-// LoadDir loads a collection from a directory. If create is true, a new
-// empty collection will be created if the directory or database does not exist.
-func LoadDir(dir string, create bool) (*Collection, error) {
-	dbPath := databasePath(dir)
-	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
-		if !create {
-			return nil, err
-		}
-
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			return nil, err
-		}
-
-		db, err := createIn(dir)
-		if err != nil {
-			return nil, err
-		}
-
-		return newCollection(db, dir, false)
-	} else if err != nil {
-		return nil, err
-	}
-
+// LoadDir loads a collection from a directory
+func LoadDir(dir string) (*Collection, error) {
 	return loadDir(dir, false)
 }
 
