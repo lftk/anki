@@ -1,5 +1,8 @@
 # Anki
 
+> **Note:** This project is under active development and the API is subject to change.
+
+
 Anki is a Go library for reading and writing Anki collection files. It aims to provide a simple and intuitive API that follows idiomatic Go practices.
 
 ## Features
