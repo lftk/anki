@@ -20,6 +20,11 @@ type Notetype struct {
 	Config    *pb.NotetypeConfig
 }
 
+// SimpleNotetypeConfig creates a simple notetype configuration with the given CSS.
+func SimpleNotetypeConfig(css string) *pb.NotetypeConfig {
+	return &pb.NotetypeConfig{Css: css}
+}
+
 // Field represents a field in a notetype.
 type Field struct {
 	Ordinal int
