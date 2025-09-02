@@ -206,3 +206,15 @@ func scanDeck(_ sqlQueryer, row sqlRow) (*Deck, error) {
 	deck.Modified = time.Unix(mod, 0)
 	return &deck, nil
 }
+
+// addDefaultDeck adds the default deck to the database.
+func addDefaultDeck(e sqlExecer) error {
+	return addDeck(e, &Deck{
+		ID:       1,
+		Name:     "Default",
+		Modified: timeZero(),
+		USN:      0,
+		Common:   DefaultDeckCommon(),
+		Kind:     NormalDeckKind(1), // Use default deck config ID.
+	})
+}

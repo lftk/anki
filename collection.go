@@ -52,9 +52,18 @@ func Create() (*Collection, error) {
 			return nil, err
 		}
 
-		if err := sqlExecute(db, schemaQuery); err != nil {
+		if err = sqlExecute(db, schemaQuery); err != nil {
 			_ = db.Close()
 			return nil, err
+		}
+
+		for _, fn := range []func(sqlExecer) error{
+			initDefaultConfigs, addDefaultDeckConfig, addDefaultDeck, addDefaultNotetypes,
+		} {
+			if err = fn(db); err != nil {
+				_ = db.Close()
+				return nil, err
+			}
 		}
 
 		return newCollection(db, dir, true)

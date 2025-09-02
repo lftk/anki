@@ -268,3 +268,9 @@ func scanNotetype(q sqlQueryer, row sqlRow) (*Notetype, error) {
 
 	return &nt, nil
 }
+
+// addDefaultNotetypes adds the default notetypes to the database.
+func addDefaultNotetypes(e sqlExecer) error {
+	// TODO add default notetypes
+	return nil
+}

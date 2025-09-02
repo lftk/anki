@@ -69,6 +69,11 @@ func DefaultDeckConfig() *pb.DeckConfig {
 
 // AddDeckConfig adds a new deck configuration to the collection.
 func (c *Collection) AddDeckConfig(config *DeckConfig) error {
+	return addDeckConfig(c.db, config)
+}
+
+// addDeckConfig is a helper function to add a deck configuration to the database.
+func addDeckConfig(e sqlExecer, config *DeckConfig) error {
 	id := config.ID
 	if id == 0 {
 		id = time.Now().UnixMilli()
@@ -89,7 +94,7 @@ func (c *Collection) AddDeckConfig(config *DeckConfig) error {
 		timeUnix(config.Modified),
 		inner,
 	}
-	id, err = sqlInsert(c.db, addDeckConfigQuery, args...)
+	id, err = sqlInsert(e, addDeckConfigQuery, args...)
 	if err == nil {
 		config.ID = id
 	}
@@ -128,4 +133,15 @@ func scanDeckConfig(_ sqlQueryer, row sqlRow) (*DeckConfig, error) {
 		return nil, err
 	}
 	return &c, nil
+}
+
+// addDefaultDeckConfig adds the default deck configuration to the database.
+func addDefaultDeckConfig(e sqlExecer) error {
+	return addDeckConfig(e, &DeckConfig{
+		ID:       1,
+		Name:     "Default",
+		Modified: timeZero(),
+		USN:      0,
+		Config:   DefaultDeckConfig(),
+	})
 }
