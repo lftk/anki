@@ -1,2 +1,2 @@
-// Package anki is a Go library for reading, writing, and modifying Anki collections.
+// Package anki provides functionality to create, read, and modify Anki decks and collections programmatically.
 package anki
