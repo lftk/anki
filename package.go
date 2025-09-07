@@ -117,12 +117,13 @@ func writeDatabase(w *zip.Writer, path string) error {
 // restoreMediaEntries restores media entries from a zip archive.
 func restoreMediaEntries(r *zip.Reader, meta *pb.PackageMetadata, dir string) error {
 	if err := os.Mkdir(dir, 0755); err != nil {
-		if !errors.Is(err, fs.ErrExist) {
-			return err
-		}
+		return err
 	}
 	media, err := readMediaEntries(r)
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			err = nil
+		}
 		return err
 	}
 	for i, entry := range media.Entries {
@@ -180,10 +181,9 @@ func writeMediaEntries(w *zip.Writer, dir string) error {
 		return nil
 	}
 	if err := filepath.WalkDir(dir, fn); err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			err = nil
+		if !errors.Is(err, fs.ErrNotExist) {
+			return err
 		}
-		return err
 	}
 
 	b, err := proto.Marshal(&media)
