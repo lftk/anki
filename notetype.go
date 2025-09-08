@@ -3,6 +3,7 @@ package anki
 import (
 	"database/sql"
 	"iter"
+	"strings"
 	"time"
 
 	"github.com/lftk/anki/pb"
@@ -160,11 +161,29 @@ func (c *Collection) DeleteNotetype(id int64) error {
 }
 
 // ListNotetypesOptions specifies options for listing notetypes.
-type ListNotetypesOptions struct{}
+type ListNotetypesOptions struct {
+	Name *string
+}
 
 // ListNotetypes lists all notetypes.
 func (c *Collection) ListNotetypes(opts *ListNotetypesOptions) iter.Seq2[*Notetype, error] {
-	return sqlSelectSeq(c.db, scanNotetype, getNotetypeQuery)
+	var args []any
+	var conds []string
+
+	if opts != nil {
+		if opts.Name != nil {
+			name := *opts.Name
+			conds = append(conds, "(name = ? OR name LIKE ?)")
+			args = append(args, name, name+"+%")
+		}
+	}
+
+	query := getNotetypeQuery
+	if len(conds) > 0 {
+		query += " WHERE " + strings.Join(conds, " AND ")
+	}
+
+	return sqlSelectSeq(c.db, scanNotetype, query, args...)
 }
 
 // getNotetype gets a notetype by its ID.
