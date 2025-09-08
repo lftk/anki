@@ -2,6 +2,7 @@ package anki
 
 import (
 	"database/sql"
+	"errors"
 	"iter"
 	"strings"
 	"time"
@@ -106,48 +107,7 @@ func (c *Collection) AddNotetype(notetype *Notetype) error {
 
 // UpdateNotetype updates an existing notetype in the collection.
 func (c *Collection) UpdateNotetype(notetype *Notetype) error {
-	return sqlTransact(c.db, func(tx *sql.Tx) error {
-		notetype.Modified = time.Now()
-		notetype.USN = -1
-
-		config, err := proto.Marshal(notetype.Config)
-		if err != nil {
-			return err
-		}
-
-		args := []any{
-			notetype.Name,
-			timeUnix(notetype.Modified),
-			notetype.USN,
-			config,
-			notetype.ID,
-		}
-		if err = sqlExecute(tx, updateNotetypeQuery, args...); err != nil {
-			return err
-		}
-
-		if err = sqlExecute(tx, deleteFieldsQuery, notetype.ID); err != nil {
-			return err
-		}
-		if err = sqlExecute(tx, deleteTemplatesQuery, notetype.ID); err != nil {
-			return err
-		}
-
-		for _, f := range notetype.Fields {
-			if err = addField(tx, notetype.ID, f); err != nil {
-				return err
-			}
-		}
-
-		for _, t := range notetype.Templates {
-			t.Modified = notetype.Modified
-			if err = addTemplate(tx, notetype.ID, t); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	})
+	return errors.New("not implemented")
 }
 
 // DeleteNotetype deletes a notetype by its ID.
