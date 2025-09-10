@@ -22,9 +22,17 @@ type Notetype struct {
 	Config    *pb.NotetypeConfig
 }
 
-// SimpleNotetypeConfig creates a simple notetype configuration with the given CSS.
-func SimpleNotetypeConfig(css string) *pb.NotetypeConfig {
-	return &pb.NotetypeConfig{Css: css}
+// NewNotetypeConfig creates a new notetype configuration.
+// If cloze is true, the notetype is configured for cloze deletion.
+func NewNotetypeConfig(css string, cloze bool) *pb.NotetypeConfig {
+	kind := pb.NotetypeConfig_KIND_NORMAL
+	if cloze {
+		kind = pb.NotetypeConfig_KIND_CLOZE
+	}
+	return &pb.NotetypeConfig{
+		Css:  css,
+		Kind: kind,
+	}
 }
 
 // Field represents a field in a notetype.
@@ -32,6 +40,30 @@ type Field struct {
 	Ordinal int
 	Name    string
 	Config  *pb.FieldConfig
+}
+
+// NewField creates a new field with the given name and default configuration.
+// The ordinal is initialized to -1 and will be set when added to a notetype.
+func NewField(name string) *Field {
+	id := time.Now().UnixMilli()
+	return &Field{
+		Ordinal: -1,
+		Name:    name,
+		Config: &pb.FieldConfig{
+			Id:                &id,
+			Sticky:            false,
+			Rtl:               false,
+			PlainText:         false,
+			FontName:          "Arial",
+			FontSize:          20,
+			Description:       "",
+			Collapsed:         false,
+			ExcludeFromSearch: false,
+			Tag:               nil,
+			PreventDeletion:   false,
+			Other:             nil,
+		},
+	}
 }
 
 // Template represents a template in a notetype.
@@ -43,12 +75,21 @@ type Template struct {
 	Config   *pb.TemplateConfig
 }
 
-// SimpleTemplateConfig creates a simple template configuration with the given
-// front and back formats.
-func SimpleTemplateConfig(front, back string) *pb.TemplateConfig {
-	return &pb.TemplateConfig{
-		QFormat: front,
-		AFormat: back,
+// NewTemplate creates a new template with the given name, question format,
+// and answer format.
+// The ordinal is initialized to -1 and will be set when added to a notetype.
+func NewTemplate(name, qfmt, afmt string) *Template {
+	id := time.Now().UnixMilli()
+	return &Template{
+		Ordinal:  -1,
+		Name:     name,
+		Modified: timeZero(),
+		USN:      0,
+		Config: &pb.TemplateConfig{
+			Id:      &id,
+			QFormat: qfmt,
+			AFormat: afmt,
+		},
 	}
 }
 
@@ -88,13 +129,15 @@ func (c *Collection) AddNotetype(notetype *Notetype) error {
 			return err
 		}
 
-		for _, f := range notetype.Fields {
+		for i, f := range notetype.Fields {
+			f.Ordinal = i
 			if err := addField(tx, notetype.ID, f); err != nil {
 				return err
 			}
 		}
 
-		for _, t := range notetype.Templates {
+		for i, t := range notetype.Templates {
+			t.Ordinal = i
 			t.Modified = notetype.Modified
 			if err := addTemplate(tx, notetype.ID, t); err != nil {
 				return err
