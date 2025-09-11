@@ -54,6 +54,9 @@ var getDeckConfigQuery string
 //go:embed queries/delete_deck_config.sql
 var deleteDeckConfigQuery string
 
+//go:embed queries/delete_card.sql
+var deleteCardQuery string
+
 //go:embed queries/delete_cards.sql
 var deleteCardsQuery string
 
@@ -101,3 +104,6 @@ var deleteTagQuery string
 
 //go:embed queries/get_col.sql
 var getColQuery string
+
+//go:embed queries/add_grave.sql
+var addGraveQuery string

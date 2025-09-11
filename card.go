@@ -14,7 +14,7 @@ type Card struct {
 	ID             int64
 	NoteID         int64
 	DeckID         int64
-	Ordinal        int64
+	Ordinal        int
 	Modified       time.Time
 	USN            int64
 	Type           CardType
@@ -169,8 +169,9 @@ func updateCard(e sqlExecer, card *Card) error {
 
 // ListCardsOptions specifies options for listing cards.
 type ListCardsOptions struct {
-	NoteID *int64
-	DeckID *int64
+	NoteID   *int64
+	DeckID   *int64
+	Ordinals []int
 }
 
 // ListCards lists cards with optional filtering.
@@ -192,6 +193,15 @@ func listCards(q sqlQueryer, opts *ListCardsOptions) iter.Seq2[*Card, error] {
 		if opts.DeckID != nil {
 			conds = append(conds, "did = ?")
 			args = append(args, *opts.DeckID)
+		}
+
+		if n := len(opts.Ordinals); n > 0 {
+			conds = append(conds,
+				fmt.Sprintf("ord in (?%s)", strings.Repeat(", ?", n-1)),
+			)
+			for _, ord := range opts.Ordinals {
+				args = append(args, ord)
+			}
 		}
 	}
 
@@ -241,4 +251,13 @@ func scanCard(_ sqlQueryer, row sqlRow) (*Card, error) {
 // deleteCards deletes all cards for a given note.
 func deleteCards(e sqlExecer, noteID int64) error {
 	return sqlExecute(e, deleteCardsQuery, noteID)
+}
+
+// deleteCardAndAddGrave deletes a card and adds a grave entry for it.
+// This is used to track deletions for syncing.
+func deleteCardAndAddGrave(e sqlExecer, card *Card) error {
+	if err := addCardGrave(e, card.ID); err != nil {
+		return err
+	}
+	return sqlExecute(e, deleteCardQuery, card.ID)
 }

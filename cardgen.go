@@ -11,7 +11,7 @@ import (
 
 // generateCards generates cards for a given note.
 // It takes a deckID, a note, and a notetype and returns a sequence of cards.
-func generateCards(deckID int64, note *Note, notetype *Notetype, existingOrds []int64) iter.Seq2[*Card, error] {
+func generateCards(deckID int64, note *Note, notetype *Notetype, existingOrds []int) iter.Seq2[*Card, error] {
 	return func(yield func(*Card, error) bool) {
 		cards, err := newCardsRequired(deckID, note, notetype)
 		if err != nil {
@@ -66,7 +66,7 @@ func newCardsRequiredNormal(deckID int64, note *Note, notetype *Notetype) ([]*ca
 				targetDeckID = deckID
 			}
 			card := &cardToGenerate{
-				Ordinal: int64(ord),
+				Ordinal: ord,
 				DeckID:  targetDeckID,
 				Due:     0,
 			}
@@ -109,7 +109,7 @@ func newCardsRequiredCloze(deckID int64, note *Note) ([]*cardToGenerate, error) 
 	cards := make([]*cardToGenerate, 0, len(ords))
 	for _, ord := range ords {
 		card := &cardToGenerate{
-			Ordinal: int64(ord - 1),
+			Ordinal: ord - 1,
 			DeckID:  deckID,
 			Due:     0,
 		}
@@ -120,7 +120,7 @@ func newCardsRequiredCloze(deckID int64, note *Note) ([]*cardToGenerate, error) 
 
 // cardToGenerate is a struct that holds information about a card to be generated.
 type cardToGenerate struct {
-	Ordinal int64
+	Ordinal int
 	DeckID  int64
 	Due     int64
 }

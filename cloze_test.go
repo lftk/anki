@@ -10,7 +10,7 @@ func TestClozeNumberInFields(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  []string
-		want    []int64
+		want    []int
 		wantErr bool
 	}{
 		{
@@ -21,22 +21,22 @@ func TestClozeNumberInFields(t *testing.T) {
 		{
 			name:   "single cloze",
 			fields: []string{"This is a {{c1::test}}.", "Another field."},
-			want:   []int64{1},
+			want:   []int{1},
 		},
 		{
 			name:   "multiple clozes same number",
 			fields: []string{"This is a {{c1::test}} and another {{c1::example}}.", "Another field."},
-			want:   []int64{1},
+			want:   []int{1},
 		},
 		{
 			name:   "multiple clozes different numbers",
 			fields: []string{"This is a {{c1::test}} and another {{c2::example}}.", "Another {{c3::field}}."},
-			want:   []int64{1, 2, 3},
+			want:   []int{1, 2, 3},
 		},
 		{
 			name:   "non-sequential cloze numbers",
 			fields: []string{"This is a {{c3::test}} and another {{c1::example}}.", "Another {{c2::field}}."},
-			want:   []int64{3, 1, 2},
+			want:   []int{3, 1, 2},
 		},
 		{
 			name:   "invalid cloze number",

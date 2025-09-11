@@ -95,6 +95,10 @@ type ListNotesOptions struct {
 
 // ListNotes lists notes with optional filtering.
 func (c *Collection) ListNotes(opts *ListNotesOptions) iter.Seq2[*Note, error] {
+	return listNotes(c.db, opts)
+}
+
+func listNotes(q sqlQueryer, opts *ListNotesOptions) iter.Seq2[*Note, error] {
 	var args []any
 	var conds []string
 
@@ -110,7 +114,7 @@ func (c *Collection) ListNotes(opts *ListNotesOptions) iter.Seq2[*Note, error] {
 		query += " WHERE " + strings.Join(conds, " AND ")
 	}
 
-	return sqlSelectSeq(c.db, scanNote, query, args...)
+	return sqlSelectSeq(q, scanNote, query, args...)
 }
 
 // addNote is an internal helper to add a note.
@@ -178,7 +182,7 @@ func updateNote(tx *sql.Tx, note *Note, notetype *Notetype) error {
 
 	if !slices.Equal(oldNote.Fields, note.Fields) {
 		var deckID int64
-		var existingOrds []int64
+		var existingOrds []int
 		for card, err := range listCards(tx, &ListCardsOptions{NoteID: &note.ID}) {
 			if err != nil {
 				return err
@@ -203,7 +207,12 @@ func updateNote(tx *sql.Tx, note *Note, notetype *Notetype) error {
 		}
 	}
 
-	// Update note fields
+	return updateNoteWithoutCards(tx, note, notetype)
+}
+
+// updateNoteWithoutCards updates the note's fields and metadata, but does not
+// handle card generation or deletion.
+func updateNoteWithoutCards(tx *sql.Tx, note *Note, notetype *Notetype) error {
 	if note.GUID == "" {
 		guid, err := randomGUID()
 		if err != nil {
@@ -211,8 +220,9 @@ func updateNote(tx *sql.Tx, note *Note, notetype *Notetype) error {
 		}
 		note.GUID = guid
 	}
+
+	note.USN = 0
 	note.Modified = time.Now()
-	note.USN = -1
 
 	fld1, sfld, err := prepareNoteFields(note, notetype)
 	if err != nil {

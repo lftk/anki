@@ -30,3 +30,13 @@ func scanValue[T any](_ sqlQueryer, row sqlRow) (T, error) {
 	var val T
 	return val, row.Scan(&val)
 }
+
+// sliceMap applies a function to each element of a slice and returns a new slice
+// with the results. It is a generic map function for slices.
+func sliceMap[Slice ~[]E, E, T any](s Slice, f func(E) T) []T {
+	vals := make([]T, 0, len(s))
+	for _, e := range s {
+		vals = append(vals, f(e))
+	}
+	return vals
+}
