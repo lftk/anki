@@ -103,10 +103,13 @@ func (c *Collection) DeleteMedia(name string) error {
 }
 
 // ListMediaOptions specifies options for listing media files.
-type ListMediaOptions struct{}
+type ListMediaOptions struct {
+	// A glob pattern to filter media files by name.
+	Pattern *string
+}
 
 // ListMedia lists all media files.
-func (c *Collection) ListMedia(*ListMediaOptions) iter.Seq2[Media, error] {
+func (c *Collection) ListMedia(opts *ListMediaOptions) iter.Seq2[Media, error] {
 	dir := c.mediaDir()
 	return func(yield func(Media, error) bool) {
 		fn := func(path string, d fs.DirEntry, err error) error {
@@ -117,6 +120,16 @@ func (c *Collection) ListMedia(*ListMediaOptions) iter.Seq2[Media, error] {
 			name, err := filepath.Rel(dir, path)
 			if err != nil {
 				return err
+			}
+
+			if opts != nil && opts.Pattern != nil {
+				matched, err := filepath.Match(*opts.Pattern, name)
+				if err != nil {
+					return err
+				}
+				if !matched {
+					return nil
+				}
 			}
 
 			if !yield(&media{name: name, path: path}, nil) {
